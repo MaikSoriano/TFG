@@ -23,6 +23,9 @@ THREE.BlendCharacter = function () {
 					scope.skinnedMesh = object;
 
 				}
+				if( object.material ) {
+					object.material.side = THREE.DoubleSide;
+				}
 
 			} );
 

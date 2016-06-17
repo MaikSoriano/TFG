@@ -92,7 +92,7 @@
 				window.addEventListener( 'toggle-show-model', onShowModel );
 
 				blendMesh = new THREE.BlendCharacter();
-				blendMesh.load( "models/skinned/marine/marine_anims_core.json", start );
+				blendMesh.load( "models/skinned/marine/personaje.json", start );
 
 			}
 
@@ -208,9 +208,13 @@
 				controls.update();
 
 				// Set default weights
-				blendMesh.applyWeight( 'idle', 1 / 3 );
+				/*blendMesh.applyWeight( 'idle', 1 / 3 );
 				blendMesh.applyWeight( 'walk', 1 / 3 );
+<<<<<<< HEAD
+				blendMesh.applyWeight( 'run',  1 / 3 );*/
+=======
 				blendMesh.applyWeight( 'run', 1 / 3 );
+>>>>>>> parent of afca3d4... aplicación demo terminada
 
 				gui = new BlendCharacterGui(blendMesh);
 
@@ -233,7 +237,7 @@
 
 				// step forward in time based on whether we're stepping and scale
 
-				var scale = gui.getTimeScale();
+				/*var scale = gui.getTimeScale();
 				var delta = clock.getDelta();
 				var stepSize = (!isFrameStepping) ? delta * scale: timeToStep;
 
@@ -241,7 +245,7 @@
 
 				blendMesh.update( stepSize );
 				helper.update();
-				gui.update( blendMesh.mixer.time );
+				gui.update( blendMesh.mixer.time );*/
 
 				renderer.render( scene, camera );
 				stats.end();
