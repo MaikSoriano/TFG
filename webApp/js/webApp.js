@@ -5,14 +5,10 @@
 var render;
 var escena;
 var camara;
-var blendMesh = null;
+var personaje = null;
 var contenedor;
 var stats;
-<<<<<<< HEAD
 var clock = new THREE.Clock();
-=======
-
->>>>>>> parent of afca3d4... aplicación demo terminada
 
 
 function init()
@@ -24,28 +20,22 @@ function init()
 
     //Render
     render = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-<<<<<<< HEAD
     render.setClearColor("rgb(200, 50, 50)",1);
     render.setPixelRatio( window.devicePixelRatio );
     render.setSize( window.innerWidth, window.innerHeight );
-=======
-    render.setClearColor("rgb(200, 200, 200)",1);
->>>>>>> parent of afca3d4... aplicación demo terminada
     render.autoClear = true;
-
-    var canvasWidth = 500;
-    var canvasHeight = 500;
-    render.setSize(canvasWidth, canvasHeight);
 
     contenedor = document.getElementById("divCanvas");
     contenedor.appendChild(render.domElement);
 
+    contenedor.canvasWidth = window.innerWidth;
+    contenedor.canvasHeight = window.innerHeight;
+    render.setSize(contenedor.canvasWidth, contenedor.canvasHeight);
 
 
     stats = new Stats();
     contenedor.appendChild(stats.dom);
 
-<<<<<<< HEAD
     // create the video element
     videoTx = document.createElement( 'video' );
     videoTx.src = "resources/pasillo2.mp4";
@@ -78,56 +68,47 @@ function init()
     //escena.add(plane);
 
 
-=======
->>>>>>> parent of afca3d4... aplicación demo terminada
     //Camara
     /*camara = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 1000);
     camara.position.set(0, 0, 0);
     camara.lookAt(escena.position);
     escena.add(camara);*/
 
-    //Personaje
-    blendMesh = new THREE.BlendCharacter();
-    //blendMesh.load( "models/marine_anims_core.json", start);
-    blendMesh.load( "models/correr.js", start);
+    //Listener
+    window.addEventListener('resize',  onWindowResize, false);
+    window.addEventListener('keydown', onKeydown,      false);
+    window.addEventListener('keyup',   onKeyup,        false);
 
-    //render.render(escena, camara);
 
-<<<<<<< HEAD
     //Personaje
     personaje = new THREE.BlendCharacter();
     personaje.load( "models/personaje.json", start);
     //personaje.load( "models/correr.json", start);
-=======
->>>>>>> parent of afca3d4... aplicación demo terminada
 }
 
 
 function start()
 {
 
-<<<<<<< HEAD
     //personaje.rotation.y = Math.PI * -135 / 180;
     //personaje.position.y = -40;
     escena.add(personaje);
-=======
-    blendMesh.rotation.y = Math.PI * -135 / 180;
-    escena.add(blendMesh);
->>>>>>> parent of afca3d4... aplicación demo terminada
 
-    var aspect = window.innerWidth / window.innerHeight;
-    var radius = blendMesh.geometry.boundingSphere.radius;
+    var aspect = contenedor.canvasWidth / contenedor.canvasHeight;
+    var radius = personaje.geometry.boundingSphere.radius;
 
-    camara = new THREE.PerspectiveCamera( 45, 1, 1, 10000 );
+    camara = new THREE.PerspectiveCamera( 45, aspect, 1, 10000 );
     camara.position.set( 0.0, radius, radius * 3.5 );
     escena.add(camara);
 
-<<<<<<< HEAD
-    personaje.moverEstado = { delante: 0, atras: 0, izquierda: 0, derecha: 0, girarIz: 0, girarDe: 0, velocidad: 0 };
+    personaje.moverEstado = { delante: 0, atras: 0, izquierda: 0, derecha: 0,
+                              girarIz: 0, girarDe: 0, saltando: 0,velocidad: 0 };
+    personaje.pesoAnimacion = {esperar:1, correr: 0, salto: 0};
+    personaje.relojSalto = new THREE.Clock(false);
+    personaje.esperarSalto = 5.3;
+    personaje.relojSalto.ultimoSalto = 0;
     personaje.play("esperarBueno", 1);
 
-=======
->>>>>>> parent of afca3d4... aplicación demo terminada
     animar();
 }
 
@@ -137,15 +118,36 @@ function animar()
     requestAnimationFrame(animar, render.domElement);
     stats.begin();
 
+
     renderEscena();
+    actualizarMov();
+    var delta = clock.getDelta();
+    personaje.update(delta);
+
+    if((personaje.relojSalto.getElapsedTime()-personaje.relojSalto.ultimoSalto)*100 > + personaje.esperarSalto)
+    {
+        personaje.relojSalto.stop();
+        personaje.relojSalto.ultimoSalto = personaje.relojSalto.getElapsedTime();
+        personaje.moverEstado.saltando = 0;
+        personaje.moverEstado.saltando = 0;
+        personaje.pesoAnimacion.salto = 0;
+        personaje.stopAll();
+    }
+    console.log((personaje.relojSalto.getElapsedTime()-personaje.relojSalto.ultimoSalto)*100);
 
     stats.end();
 }
 
 function renderEscena()
 {
+    //canvasTx.getContext('2d').drawImage(videoTx, 0, 0);
+
+    // Actualizamos la textura.
+    videoTexture.needsUpdate = true;
+    render.autoClear = false;
+    render.clear();
+
     render.render(escena, camara);
-<<<<<<< HEAD
 
 }
 
@@ -177,6 +179,13 @@ function onKeydown(event)
         case 65: /*A*/ personaje.moverEstado.girarIz = 1; break;
         case 68: /*D*/ personaje.moverEstado.girarDe = 1; break;
 
+        case 32: /*SPACE*/
+            if(personaje.moverEstado.saltando == 0)
+            {
+                personaje.moverEstado.saltando = 1;
+            }
+            break;
+
     }
 
     actualizarMov();
@@ -204,7 +213,7 @@ function actualizarMov()
 {
     var velocidadGiro = 0.045;
     var velocidadMovLateral  = 4;
-    var velocidadCorrer = 0.03;
+    var velocidadCambioAnimación = 0.05;
 
     var maxGiro = 0.55;
     var maxPos  = 270;
@@ -215,9 +224,9 @@ function actualizarMov()
     {
         personaje.rotation.y += velocidadGiro * (-personaje.moverEstado.girarDe + personaje.moverEstado.girarIz);
 
-        if(personaje.moverEstado.velocidad >0)
+        if(personaje.pesoAnimacion.correr >0)
         {
-            personaje.position.x += -velocidadMovLateral * personaje.rotation.y * personaje.moverEstado.velocidad;
+            personaje.position.x += -velocidadMovLateral * personaje.rotation.y * personaje.pesoAnimacion.correr;
         }
 
     }
@@ -250,20 +259,64 @@ function actualizarMov()
         personaje.rotation.y = 0;
     }
 
-    if(personaje.moverEstado.delante == 1 && personaje.moverEstado.velocidad <= 1)
-    {
-        personaje.moverEstado.velocidad += velocidadCorrer;
-        personaje.play("correrBueno", personaje.moverEstado.velocidad);
-        personaje.play("esperarBueno", 1 - personaje.moverEstado.velocidad);
 
-    }
-    else if(personaje.moverEstado.delante == 0 && personaje.moverEstado.velocidad >= 0)
+    //Salto, Si personaje.moverEstado.saltando está a 1 comenzamos el salto y cambiamos el valor,
+    //  si está a 0.5 es que ya está saltando.
+    if(personaje.moverEstado.saltando == 1 && personaje.pesoAnimacion.salto <= 1)
     {
-        personaje.moverEstado.velocidad -= velocidadCorrer;
-        personaje.play("correrBueno", personaje.moverEstado.velocidad);
-        personaje.play("esperarBueno", 1 - personaje.moverEstado.velocidad);
-    }
+        personaje.relojSalto.start();
+        personaje.pesoAnimacion.salto += velocidadCambioAnimación;
+        personaje.pesoAnimacion.correr  -= velocidadCambioAnimación;
+        personaje.pesoAnimacion.esperar -= velocidadCambioAnimación;
 
-=======
->>>>>>> parent of afca3d4... aplicación demo terminada
+
+        personaje.play("saltoBueno", personaje.pesoAnimacion.salto);
+        personaje.play("correrBueno", personaje.pesoAnimacion.correr);
+        personaje.play("esperarBueno",personaje.pesoAnimacion.esperar);
+    }
+    //Si no esta saltando se anima correr o esperar,
+    //Si se está pulsando hacia adelante empieza a ganar peso la animación de correr hasta el tope
+    else if(personaje.moverEstado.saltando == 0 && personaje.moverEstado.delante == 1 && personaje.pesoAnimacion.correr <= 1)
+    {
+        personaje.pesoAnimacion.correr += velocidadCambioAnimación;
+        //Si vuelve de saltar, esperar ya estará a 0 y no hace falta cambiarla. En caso contrario esperar disminuye conforme correr avanza
+        if(personaje.pesoAnimacion.esperar >= 0)
+            personaje.pesoAnimacion.esperar = 1.0 - personaje.pesoAnimacion.correr;
+
+        personaje.play("correrBueno", personaje.pesoAnimacion.correr);
+        personaje.play("esperarBueno", personaje.pesoAnimacion.esperar);
+    }
+    //Si está corriendo y se libera el botón de hacia alante empieza a ganar peso la animación de esperar
+    else if(personaje.moverEstado.saltando == 0 && personaje.moverEstado.delante == 0 && personaje.pesoAnimacion.esperar < 1)
+    {
+
+        personaje.pesoAnimacion.esperar += velocidadCambioAnimación;
+        //Si vuelve de saltar, correr ya estará a 0 y no hace falta cambiarla. En caso contrario correr disminuye conforme esperar avanza
+        if(personaje.pesoAnimacion.correr >= 0)
+            personaje.pesoAnimacion.correr = 1 - personaje.pesoAnimacion.esperar;
+
+        personaje.play("correrBueno", personaje.pesoAnimacion.correr);
+        personaje.play("esperarBueno", personaje.pesoAnimacion.esperar);
+    }
+    restaurarPesos();
+    //console.log(personaje.pesoAnimacion);
+
+}
+
+function restaurarPesos()
+{
+    if(personaje.pesoAnimacion.salto < 0)
+        personaje.pesoAnimacion.salto = 0;
+    else if(personaje.pesoAnimacion.salto > 1)
+        personaje.pesoAnimacion.salto = 1;
+
+    if(personaje.pesoAnimacion.correr < 0)
+        personaje.pesoAnimacion.correr = 0;
+    else if(personaje.pesoAnimacion.correr > 1)
+        personaje.pesoAnimacion.correr = 1;
+
+    if(personaje.pesoAnimacion.esperar < 0)
+        personaje.pesoAnimacion.esperar = 0;
+    else if(personaje.pesoAnimacion.esperar > 1)
+        personaje.pesoAnimacion.esperar = 1;
 }

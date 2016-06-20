@@ -107,6 +107,7 @@
 
 			function onStartAnimation( event ) {
 
+				console.log(event);
 				var data = event.detail;
 
 				blendMesh.stopAll();
@@ -210,11 +211,7 @@
 				// Set default weights
 				/*blendMesh.applyWeight( 'idle', 1 / 3 );
 				blendMesh.applyWeight( 'walk', 1 / 3 );
-<<<<<<< HEAD
 				blendMesh.applyWeight( 'run',  1 / 3 );*/
-=======
-				blendMesh.applyWeight( 'run', 1 / 3 );
->>>>>>> parent of afca3d4... aplicación demo terminada
 
 				gui = new BlendCharacterGui(blendMesh);
 
@@ -240,6 +237,7 @@
 				/*var scale = gui.getTimeScale();
 				var delta = clock.getDelta();
 				var stepSize = (!isFrameStepping) ? delta * scale: timeToStep;
+
 
 				// modify blend weights
 
