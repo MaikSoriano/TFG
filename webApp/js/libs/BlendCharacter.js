@@ -135,6 +135,8 @@ THREE.BlendCharacter = function () {
 
 	}
 
+
+
 	this.pauseAll = function() {
 
 		this.mixer.timeScale = 0;
@@ -158,6 +160,23 @@ THREE.BlendCharacter = function () {
 
 		this.visible = boolean;
 
+	}
+
+	/*** PROPIAS ***/
+
+	this.stopOne = function(animName)
+	{
+		this.mixer.clipAction( animName ).stop();
+	}
+
+	this.playAt = function(animName)
+	{
+		this.mixer.clipAction( animName ).startAt(0);
+	}
+
+	this.reset = function(animName)
+	{
+		this.mixer.clipAction( animName ).reset();
 	}
 
 };

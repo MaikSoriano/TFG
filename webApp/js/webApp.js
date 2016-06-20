@@ -9,6 +9,7 @@ var personaje = null;
 var contenedor;
 var stats;
 var clock = new THREE.Clock();
+var ultimoSalto = 0;
 
 
 function init()
@@ -104,9 +105,7 @@ function start()
     personaje.moverEstado = { delante: 0, atras: 0, izquierda: 0, derecha: 0,
                               girarIz: 0, girarDe: 0, saltando: 0,velocidad: 0 };
     personaje.pesoAnimacion = {esperar:1, correr: 0, salto: 0};
-    personaje.relojSalto = new THREE.Clock(false);
-    personaje.esperarSalto = 5.3;
-    personaje.relojSalto.ultimoSalto = 0;
+    personaje.mixer.clipAction("saltoBueno").timeScale = 2;
     personaje.play("esperarBueno", 1);
 
     animar();
@@ -123,17 +122,6 @@ function animar()
     actualizarMov();
     var delta = clock.getDelta();
     personaje.update(delta);
-
-    if((personaje.relojSalto.getElapsedTime()-personaje.relojSalto.ultimoSalto)*100 > + personaje.esperarSalto)
-    {
-        personaje.relojSalto.stop();
-        personaje.relojSalto.ultimoSalto = personaje.relojSalto.getElapsedTime();
-        personaje.moverEstado.saltando = 0;
-        personaje.moverEstado.saltando = 0;
-        personaje.pesoAnimacion.salto = 0;
-        personaje.stopAll();
-    }
-    console.log((personaje.relojSalto.getElapsedTime()-personaje.relojSalto.ultimoSalto)*100);
 
     stats.end();
 }
@@ -213,23 +201,35 @@ function actualizarMov()
 {
     var velocidadGiro = 0.045;
     var velocidadMovLateral  = 4;
+    var velocidadSalto = 1.3;
     var velocidadCambioAnimación = 0.05;
 
     var maxGiro = 0.55;
     var maxPos  = 270;
 
 
+    //Cuando se complete la animación de salto cambiamos el estado
+    if(personaje.mixer.clipAction("saltoBueno").time >= personaje.mixer.clipAction("saltoBueno")._clip.duration-1)
+    {
+        personaje.moverEstado.saltando = 0.5;
+    }
 
+
+    //Si estamos dentro del angulo de giro se gira hacia un lado u otro y se mueve en X si se da el caso
     if(personaje.rotation.y >= -maxGiro && personaje.rotation.y <= maxGiro)
     {
         personaje.rotation.y += velocidadGiro * (-personaje.moverEstado.girarDe + personaje.moverEstado.girarIz);
 
-        if(personaje.pesoAnimacion.correr >0)
+        if(personaje.pesoAnimacion.correr > 0) //Si no está parado se mueve en el eje X
         {
             personaje.position.x += -velocidadMovLateral * personaje.rotation.y * personaje.pesoAnimacion.correr;
         }
-
+        else if(personaje.pesoAnimacion.salto > 0) //Si se esta saltando y girado tambien se mueve en el X
+        {
+            personaje.position.x += -velocidadMovLateral * personaje.rotation.y * personaje.pesoAnimacion.salto;
+        }
     }
+
 
     //Cuando gire demasiado que no siga girando
     if(personaje.rotation.y < -maxGiro)
@@ -260,19 +260,70 @@ function actualizarMov()
     }
 
 
+
     //Salto, Si personaje.moverEstado.saltando está a 1 comenzamos el salto y cambiamos el valor,
-    //  si está a 0.5 es que ya está saltando.
-    if(personaje.moverEstado.saltando == 1 && personaje.pesoAnimacion.salto <= 1)
+    //  si está a 0.5 es que ha terminado el salto y hay que volver a correr o esperar.
+    if(personaje.moverEstado.saltando == 0.5)
     {
-        personaje.relojSalto.start();
-        personaje.pesoAnimacion.salto += velocidadCambioAnimación;
-        personaje.pesoAnimacion.correr  -= velocidadCambioAnimación;
-        personaje.pesoAnimacion.esperar -= velocidadCambioAnimación;
+        //Vamos a esperar
+        if(personaje.moverEstado.delante == 1)
+        {
+            personaje.pesoAnimacion.correr += velocidadCambioAnimación;
+            personaje.pesoAnimacion.salto  -= velocidadCambioAnimación;
+            personaje.play("correrBueno", personaje.pesoAnimacion.correr);
+            personaje.play("saltoBueno", personaje.pesoAnimacion.salto);
+            if(personaje.pesoAnimacion.salto <= 0)
+            {
+                personaje.pesoAnimacion.salto = 0;
+                personaje.moverEstado.saltando = 0;
+                personaje.stopOne("saltoBueno");
+                personaje.reset("saltoBueno");
+            }
+
+        }
+        else //Vamos a correr
+        {
+            personaje.pesoAnimacion.esperar += velocidadCambioAnimación;
+            personaje.pesoAnimacion.salto  -= velocidadCambioAnimación;
+            personaje.play("esperarBueno",personaje.pesoAnimacion.esperar);
+            personaje.play("saltoBueno", personaje.pesoAnimacion.salto);
+            if(personaje.pesoAnimacion.salto <= 0)
+            {
+                personaje.pesoAnimacion.salto = 0;
+                personaje.moverEstado.saltando = 0;
+                personaje.stopOne("saltoBueno");
+                personaje.reset("saltoBueno");
+            }
+
+        }
+    }//Saltamos y empezamos su animacion bloqueando lo demas
+    else if(personaje.moverEstado.saltando == 1)
+    {
+        //Si acaba de empezar se hace el cambio de animación.
+        if(personaje.pesoAnimacion.salto <= 1)
+        {
+            personaje.pesoAnimacion.salto += velocidadCambioAnimación;
+            personaje.pesoAnimacion.correr -= velocidadCambioAnimación;
+            personaje.pesoAnimacion.esperar -= velocidadCambioAnimación;
 
 
-        personaje.play("saltoBueno", personaje.pesoAnimacion.salto);
-        personaje.play("correrBueno", personaje.pesoAnimacion.correr);
-        personaje.play("esperarBueno",personaje.pesoAnimacion.esperar);
+            personaje.play("saltoBueno", personaje.pesoAnimacion.salto);
+            personaje.play("correrBueno", personaje.pesoAnimacion.correr);
+            personaje.play("esperarBueno", personaje.pesoAnimacion.esperar);
+        }
+
+        //movemos el personaje en el eje Y dependiendo del momento de la animacion
+
+        if(personaje.mixer.clipAction("saltoBueno").time > 1.15 && personaje.mixer.clipAction("saltoBueno").time < 2.85)
+        {
+            personaje.position.y += velocidadSalto;
+        }
+        else if(personaje.mixer.clipAction("saltoBueno").time > 2.85 && personaje.position.y > 0)
+        {
+            personaje.position.y -= velocidadSalto;
+        }
+
+
     }
     //Si no esta saltando se anima correr o esperar,
     //Si se está pulsando hacia adelante empieza a ganar peso la animación de correr hasta el tope
@@ -299,7 +350,7 @@ function actualizarMov()
         personaje.play("esperarBueno", personaje.pesoAnimacion.esperar);
     }
     restaurarPesos();
-    //console.log(personaje.pesoAnimacion);
+    //console.log(personaje.mixer.clipAction("saltoBueno").time);
 
 }
 
