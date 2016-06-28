@@ -6,10 +6,11 @@ var render;
 var escena;
 var camara;
 var personaje = null;
+var robot = null;
 var contenedor;
 var stats;
 var clock = new THREE.Clock();
-var ultimoSalto = 0;
+
 
 
 function init()
@@ -69,11 +70,19 @@ function init()
     //escena.add(plane);
 
 
+    //Camara
+    /*camara = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 1000);
+    camara.position.set(0, 0, 0);
+    camara.lookAt(escena.position);
+    escena.add(camara);*/
 
     //Listener
     window.addEventListener('resize',  onWindowResize, false);
     window.addEventListener('keydown', onKeydown,      false);
     window.addEventListener('keyup',   onKeyup,        false);
+
+    //Robot
+    robot = new Robot();
 
 
     //Personaje
@@ -81,12 +90,6 @@ function init()
     personaje.load( "models/personaje.json", start);
     //personaje.load( "models/correr.json", start);
 
-    //Camara
-    var aspect = contenedor.canvasWidth / contenedor.canvasHeight;
-    var radius = personaje.geometry.boundingSphere.radius;
-    camara = new THREE.PerspectiveCamera( 45, aspect, 1, 10000 );
-    camara.position.set( 0.0, radius, radius * 3.5 );
-    escena.add(camara);
 }
 
 
@@ -97,6 +100,12 @@ function start()
     //personaje.position.y = -40;
     escena.add(personaje);
 
+    var aspect = contenedor.canvasWidth / contenedor.canvasHeight;
+    var radius = personaje.geometry.boundingSphere.radius;
+
+    camara = new THREE.PerspectiveCamera( 45, aspect, 1, 10000 );
+    camara.position.set( 0.0, radius, radius * 3.5 );
+    escena.add(camara);
 
     personaje.moverEstado = { delante: 0, atras: 0, izquierda: 0, derecha: 0,
                               girarIz: 0, girarDe: 0, saltando: 0,velocidad: 0 };
@@ -325,6 +334,7 @@ function actualizarMov()
     //Si se está pulsando hacia adelante empieza a ganar peso la animación de correr hasta el tope
     else if(personaje.moverEstado.saltando == 0 && personaje.moverEstado.delante == 1 && personaje.pesoAnimacion.correr <= 1)
     {
+        robot.acelerar();
         personaje.pesoAnimacion.correr += velocidadCambioAnimación;
         //Si vuelve de saltar, esperar ya estará a 0 y no hace falta cambiarla. En caso contrario esperar disminuye conforme correr avanza
         if(personaje.pesoAnimacion.esperar >= 0)
@@ -336,7 +346,7 @@ function actualizarMov()
     //Si está corriendo y se libera el botón de hacia alante empieza a ganar peso la animación de esperar
     else if(personaje.moverEstado.saltando == 0 && personaje.moverEstado.delante == 0 && personaje.pesoAnimacion.esperar < 1)
     {
-
+        robot.parar();
         personaje.pesoAnimacion.esperar += velocidadCambioAnimación;
         //Si vuelve de saltar, correr ya estará a 0 y no hace falta cambiarla. En caso contrario correr disminuye conforme esperar avanza
         if(personaje.pesoAnimacion.correr >= 0)
