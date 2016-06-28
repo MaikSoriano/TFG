@@ -69,11 +69,6 @@ function init()
     //escena.add(plane);
 
 
-    //Camara
-    /*camara = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 1000);
-    camara.position.set(0, 0, 0);
-    camara.lookAt(escena.position);
-    escena.add(camara);*/
 
     //Listener
     window.addEventListener('resize',  onWindowResize, false);
@@ -85,6 +80,13 @@ function init()
     personaje = new THREE.BlendCharacter();
     personaje.load( "models/personaje.json", start);
     //personaje.load( "models/correr.json", start);
+
+    //Camara
+    var aspect = contenedor.canvasWidth / contenedor.canvasHeight;
+    var radius = personaje.geometry.boundingSphere.radius;
+    camara = new THREE.PerspectiveCamera( 45, aspect, 1, 10000 );
+    camara.position.set( 0.0, radius, radius * 3.5 );
+    escena.add(camara);
 }
 
 
@@ -95,12 +97,6 @@ function start()
     //personaje.position.y = -40;
     escena.add(personaje);
 
-    var aspect = contenedor.canvasWidth / contenedor.canvasHeight;
-    var radius = personaje.geometry.boundingSphere.radius;
-
-    camara = new THREE.PerspectiveCamera( 45, aspect, 1, 10000 );
-    camara.position.set( 0.0, radius, radius * 3.5 );
-    escena.add(camara);
 
     personaje.moverEstado = { delante: 0, atras: 0, izquierda: 0, derecha: 0,
                               girarIz: 0, girarDe: 0, saltando: 0,velocidad: 0 };
