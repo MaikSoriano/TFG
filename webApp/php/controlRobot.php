@@ -1,8 +1,9 @@
 <?php
-    if(isset($_GET["orden"]))
+
+    if(isset($_POST["orden"]))
     {
     	$argumentos = null;
-    	switch($_GET["orden"])
+    	switch($_POST["orden"])
     	{
     		case "avanzar":
     			$argumentos = "W";
@@ -27,7 +28,7 @@
 
     	if($argumentos != null)
     	{
-    		exec("python ../py/controlRobot.py ".$argumentos);
+    		$comando = exec('python controlRobot.py '.$argumentos);
     	}
     }
 ?>

@@ -5,7 +5,7 @@
 function Robot()
 {
     this.estado = {avanzar:0, girarIz: 0, girarDe: 0};
-    this.urlControl = "../php/controlRobot.php";
+    this.urlControl = "php/controlRobot.php";
 }
 
 Robot.prototype.acelerar = function()

@@ -6,7 +6,7 @@ arduino = serial.Serial('/dev/ttyACM0', 9600)
 #arduino.open()
 
 comando = sys.argv[1]
-Print comando
+print comando
 
 arduino.write(comando) #Mandar un comando hacia arduino
 

@@ -1,5 +1,6 @@
 /**
  * @author Michael Guerrero / http://realitymeltdown.com
+ *
  */
 
 THREE.BlendCharacter = function () {
@@ -162,7 +163,10 @@ THREE.BlendCharacter = function () {
 
 	}
 
-	/*** PROPIAS ***/
+	/**
+	 * @author Miguel Soriano
+	 *
+	 */
 
 	this.stopOne = function(animName)
 	{
