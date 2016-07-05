@@ -1,0 +1,70 @@
+body{
+    margin: 0px;
+}
+
+@media (min-width: 700px) {
+    .controlMovil {
+        display: none;
+    }
+}
+
+
+#controlesIzquierda{
+    position: absolute;
+    left: 10px;
+    top:  55px;
+}
+
+#controlesDerecha{
+    position: absolute;
+    right: 10px;
+    top:  55px;
+}
+
+.block{
+    display: block;
+}
+
+.flecha{
+    position: absolute;
+    width:  50px;
+    height: 60px;
+    opacity: 0.6;
+}
+
+#flechaArriba{
+    left: 48px;
+}
+
+#flechaIzquierda{
+    top:  40px;
+    left: 10px;
+}
+
+#flechaDerecha{
+    top:  40px;
+    left: 85px;
+}
+
+#flechaAbajo{
+    top:  80px;
+    left: 48px;
+}
+
+#flechaMovIzquierda{
+    top:  51px;
+    right: 70px;
+}
+
+#flechaMovDerecha{
+    top:  51px;
+    right: 0px;
+}
+
+#botonSaltar
+{
+    top:   100px;
+    right: 33px;
+}
+
+

@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <title>web application</title>
 
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="shortcut icon" href="">
+
     <script src="js/libs/three.js"></script>
     <script src="js/libs/jquery-3.0.0.min.js"></script>
     <script src="js/libs/stats.min.js"></script>
@@ -15,7 +18,63 @@
     <script src="js/Robot.js"></script>
 </head>
 <body onload="init();">
-    <div id="divCanvas"> </div>
+    <div
+            id="divCanvas">
+    </div>
+
+    <div id="controlesIzquierda" class="controlMovil">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flechaArriba" class="flecha" ontouchstart="manejadorTouch('sW')" ontouchend="manejadorTouch('eW')" x="0px" y="0px" width="50px" height="60px" viewBox="0 0 50 60" enable-background="new 0 0 50 60" xml:space="preserve">
+            <symbol  id="Flecha_6" viewBox="-21.764 -25.731 43.526 51.463">
+                <polygon fill="#3C89C9" stroke="#1D1D1B" points="-20.536,4.72 -10.384,4.72 -10.384,-25.231 10.427,-25.231 10.427,4.212 20.576,4.212 0.274,25.024 "/>
+            </symbol>
+            <use xlink:href="#Flecha_6"  width="43.526" height="51.463" x="-21.764" y="-25.731" transform="matrix(1.1463 0 0 -1.1681 24.9478 30.1214)" overflow="visible"/>
+        </svg>
+
+
+        <div class="block">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="flechaIzquierda" class="flecha" x="0px" y="0px" width="60px" height="50px" viewBox="0 0 60 50" enable-background="new 0 0 60 50" xml:space="preserve">
+                <symbol id="flechaIzquierda_6" viewBox="-21.764 -25.731 43.526 51.463">
+                    <polygon fill="#3C89C9" stroke="#1D1D1B" points="-20.536,4.72 -10.384,4.72 -10.384,-25.231 10.427,-25.231 10.427,4.212    20.576,4.212 0.274,25.024  "/>
+                </symbol>
+                <use xlink:href="#Flecha_6" width="43.526" height="51.463" x="-21.764" y="-25.731" transform="matrix(5.242778e-011 -1.1436 -1.1677 -5.134508e-011 30.0564 25.0203)" overflow="visible"/>
+            </svg>
+
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="flechaDerecha" class="flecha" x="0px" y="0px" width="60px" height="50px" viewBox="0 0 60 50" enable-background="new 0 0 60 50" xml:space="preserve">
+                <symbol id="flechaDerecha_6" viewBox="-21.764 -25.731 43.526 51.463">
+                    <polygon fill="#3C89C9" stroke="#1D1D1B" points="-20.536,4.72 -10.384,4.72 -10.384,-25.231 10.427,-25.231 10.427,4.212    20.576,4.212 0.274,25.024  "/>
+                </symbol>
+                <use xlink:href="#Flecha_6" width="43.526" height="51.463" x="-21.764" y="-25.731" transform="matrix(-1.551179e-010 1.1436 1.1677 1.562006e-010 30.0564 25.0203)" overflow="visible"/>
+            </svg>
+        </div>
+
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="flechaAbajo" class="flecha" x="0px" y="0px" width="50px" height="60px" viewBox="0 0 50 60" enable-background="new 0 0 50 60" xml:space="preserve">
+            <symbol id="flechaAbajo_6" viewBox="-21.764 -25.731 43.526 51.463">
+                <polygon fill="#3C89C9" stroke="#1D1D1B" points="-20.536,4.72 -10.384,4.72 -10.384,-25.231 10.427,-25.231 10.427,4.212    20.576,4.212 0.274,25.024  "/>
+            </symbol>
+            <use xlink:href="#Flecha_6" width="43.526" height="51.463" x="-21.764" y="-25.731" transform="matrix(-1.1463 0 0 1.1681 24.9478 30.1214)" overflow="visible"/>
+        </svg>
+    </div>
+
+    <div id="controlesDerecha" class="controlMovil">
+
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="flechaMovIzquierda" class="flecha" ontouchstart="manejadorTouch('sA')" ontouchend="manejadorTouch('eA')" x="0px" y="0px" width="60px" height="50px" viewBox="0 0 60 50" enable-background="new 0 0 60 50" xml:space="preserve">
+            <symbol id="flechaMovIzquierda_6" viewBox="-21.764 -25.731 43.526 51.463">
+                <polygon fill="#3C89C9" stroke="#1D1D1B" points="-20.536,4.72 -10.384,4.72 -10.384,-25.231 10.427,-25.231 10.427,4.212    20.576,4.212 0.274,25.024  "/>
+            </symbol>
+            <use xlink:href="#Flecha_6" width="43.526" height="51.463" x="-21.764" y="-25.731" transform="matrix(5.242778e-011 -1.1436 -1.1677 -5.134508e-011 30.0564 25.0203)" overflow="visible"/>
+        </svg>
+
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="flechaMovDerecha" class="flecha" ontouchstart="manejadorTouch('sD')" ontouchend="manejadorTouch('eD')" x="0px" y="0px" width="60px" height="50px" viewBox="0 0 60 50" enable-background="new 0 0 60 50" xml:space="preserve">
+            <symbol id="flechaMovDerecha_6" viewBox="-21.764 -25.731 43.526 51.463">
+                <polygon fill="#3C89C9" stroke="#1D1D1B" points="-20.536,4.72 -10.384,4.72 -10.384,-25.231 10.427,-25.231 10.427,4.212    20.576,4.212 0.274,25.024  "/>
+            </symbol>
+            <use xlink:href="#Flecha_6" width="43.526" height="51.463" x="-21.764" y="-25.731" transform="matrix(-1.551179e-010 1.1436 1.1677 1.562006e-010 30.0564 25.0203)" overflow="visible"/>
+        </svg>
+
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="botonSaltar" class="flecha" ontouchstart="manejadorTouch('sBarra')" ontouchend="manejadorTouch('eBarra')" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 40 40" enable-background="new 0 0 40 40" xml:space="preserve">
+            <path fill="#3C89C9" stroke="#000000" d="M39.5,26.689c0,7.075-5.487,12.811-12.255,12.811H13.49C6.721,39.5,0.5,33.764,0.5,26.689  V13.311C0.5,6.236,6.721,0.5,13.49,0.5h13.755C34.013,0.5,39.5,6.236,39.5,13.311V26.689z"/>
+        </svg>
+    </div>
 
 
 </body>

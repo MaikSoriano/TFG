@@ -10,6 +10,7 @@ var robot = null;
 var contenedor;
 var stats;
 var clock = new THREE.Clock();
+var imgSrc = "php/get_pic.php?time=" + new Date().getTime();
 
 
 
@@ -22,7 +23,7 @@ function init()
 
     //Render
     render = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    render.setClearColor("rgb(200, 50, 50)",1);
+    render.setClearColor("rgb(200, 200, 200)",0.2);
     render.setPixelRatio( window.devicePixelRatio );
     render.setSize( window.innerWidth, window.innerHeight );
     render.autoClear = true;
@@ -38,36 +39,26 @@ function init()
     stats = new Stats();
     contenedor.appendChild(stats.dom);
 
-    // create the video element
-    videoTx = document.createElement( 'video' );
-    videoTx.src = "resources/pasillo2.mp4";
-    videoTx.width  = 720 ;
-    videoTx.height = 482;
-    videoTx.load(); // must call after setting/changing source
-    //videoTx.play();
-
-    canvasTx = document.createElement( 'canvas' );
-    canvasTx.width  = 512 ;
-    canvasTx.height = 512;
-
-    canvasImageContext = canvasTx.getContext( '2d' );
 
     // background color if no video present
     //canvasImageContext.fillStyle = '#550000';
     //canvasImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
 
-    videoTexture = new THREE.Texture(canvasTx);
-    //videoTexture.minFilter = THREE.LinearFilter;
-    //videoTexture.wrapS = THREE.RepeatWrapping;
-    //videoTexture.wrapT = THREE.RepeatWrapping;
+    videoTexture = new THREE.TextureLoader().load(imgSrc);
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.wrapS = THREE.RepeatWrapping;
+    videoTexture.wrapT = THREE.RepeatWrapping;
 
-    var geometry = new THREE.PlaneGeometry(2048, 1024, 0);
+    var geometry = new THREE.PlaneGeometry(1390, 638, 0);
     var material = new THREE.MeshBasicMaterial({ map : videoTexture, depthTest : false, depthWrite : false });
     //Creamos un plano en el canvas que tendrá como textura
-    var plane = new THREE.Mesh(geometry, material);
-    plane.position.z = -900;
+    plane = new THREE.Mesh(geometry, material);
+    plane.position.z = -450;
+    plane.position.y = 90;
+    //plane.scale.x = contenedor.canvasWidth;
+    //plane.scale.y = contenedor.canvasHeight;
 
-    //escena.add(plane);
+    escena.add(plane);
 
 
     //Camara
@@ -97,7 +88,7 @@ function start()
 {
 
     //personaje.rotation.y = Math.PI * -135 / 180;
-    //personaje.position.y = -40;
+    personaje.position.y = -30;
     escena.add(personaje);
 
     var aspect = contenedor.canvasWidth / contenedor.canvasHeight;
@@ -111,9 +102,13 @@ function start()
                               girarIz: 0, girarDe: 0, saltando: 0,velocidad: 0 };
     personaje.pesoAnimacion = {esperar:1, correr: 0, salto: 0};
     personaje.mixer.clipAction("saltoBueno").timeScale = 2;
+    personaje.mixer.clipAction("correrBueno").timeScale = 2;
     personaje.play("esperarBueno", 1);
 
+    manejadorTouch();
     animar();
+    onWindowResize();
+    //alerta();
 }
 
 
@@ -133,10 +128,18 @@ function animar()
 
 function renderEscena()
 {
-    //canvasTx.getContext('2d').drawImage(videoTx, 0, 0);
 
     // Actualizamos la textura.
-    videoTexture.needsUpdate = true;
+    imgSrc = "php/get_pic.php?time=" + new Date().getTime();
+    videoTexture = new THREE.TextureLoader().load(
+        //Resource to be loaded
+        imgSrc,
+        //Function onLoad
+        function(nuevaTextura){
+            nuevaTextura.minFilter = THREE.LinearFilter;
+            plane.material.map=nuevaTextura
+        }
+    );
     render.autoClear = false;
     render.clear();
 
@@ -146,13 +149,15 @@ function renderEscena()
 
 function onWindowResize()
 {
-    contenedor.canvasWidth = window.innerWidth;
-    contenedor.canvasHeight = window.innerHeight;
+    contenedor.canvasWidth = window.innerWidth-5;
+    contenedor.canvasHeight = window.innerHeight-5;
 
     camara.aspect = contenedor.canvasWidth / contenedor.canvasHeight;
     camara.updateProjectionMatrix();
 
     render.setSize( contenedor.canvasWidth, contenedor.canvasHeight );
+    //plane.scale.x = contenedor.canvasWidth;
+    //plane.scale.y = contenedor.canvasHeight;
 }
 
 function onKeydown(event)
@@ -210,7 +215,7 @@ function actualizarMov()
     var velocidadCambioAnimación = 0.05;
 
     var maxGiro = 0.55;
-    var maxPos  = 270;
+    var maxPos  = 250;
 
 
     //Cuando se complete la animación de salto cambiamos el estado
@@ -323,7 +328,7 @@ function actualizarMov()
         {
             personaje.position.y += velocidadSalto;
         }
-        else if(personaje.mixer.clipAction("saltoBueno").time > 2.85 && personaje.position.y > 0)
+        else if(personaje.mixer.clipAction("saltoBueno").time > 2.85 && personaje.position.y > -30)
         {
             personaje.position.y -= velocidadSalto;
         }
@@ -376,4 +381,46 @@ function restaurarPesos()
         personaje.pesoAnimacion.esperar = 0;
     else if(personaje.pesoAnimacion.esperar > 1)
         personaje.pesoAnimacion.esperar = 1;
+}
+
+
+function manejadorTouch(cod)
+{
+    var aux = "";
+    switch(cod)
+    {
+        case "sW":
+            aux = {keyCode: 87};
+            onKeydown(aux);
+            break;
+        case "eW":
+            aux = {keyCode: 87};
+            onKeyup(aux);
+            break;
+        case "sA":
+            aux = {keyCode: 65};
+            onKeydown(aux);
+            break;
+        case "eA":
+            aux = {keyCode: 65};
+            onKeyup(aux);
+            break;
+        case "sD":
+            aux = {keyCode: 68};
+            onKeydown(aux);
+            break;
+        case "eD":
+            aux = {keyCode: 68};
+            onKeyup(aux);
+            break;
+        case "sBarra":
+            aux = {keyCode: 32};
+            onKeydown(aux);
+            break;
+        case "eBarra":
+            aux = {keyCode: 32};
+            onKeyup(aux);
+            break;
+    }
+
 }

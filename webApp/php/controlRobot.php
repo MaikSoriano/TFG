@@ -28,7 +28,7 @@
 
     	if($argumentos != null)
     	{
-    		$comando = exec('python controlRobot.py '.$argumentos);
+    		$comando = exec('python ../py/controlRobot.py '.$argumentos);
     	}
     }
 ?>

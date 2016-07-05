@@ -20,7 +20,7 @@ Robot.prototype.acelerar = function()
           data: {orden: "avanzar"},
           success: function (response)
           {
-              console.log("Avanzando");
+              //console.log("Avanzando");
           }
       });
   }
@@ -38,7 +38,7 @@ Robot.prototype.parar = function()
             data: {orden: "parar"},
             success: function (response)
             {
-                console.log("parando");
+                //console.log("parando");
             }
         });
     }
