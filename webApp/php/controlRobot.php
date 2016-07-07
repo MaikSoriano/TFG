@@ -14,12 +14,16 @@
     			break;
 
     		case "girarIz":
-    			$argumentos = "A";
+    			$argumentos = "Q";
     			break;
 
     		case "girarDe":
-    			$argumentos = "D";
+    			$argumentos = "E";
     			break;
+
+            case "retroceder":
+                $argumentos = "S";
+                break;
 
     		default:
     			$argumentos = null;

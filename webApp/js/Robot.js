@@ -28,9 +28,11 @@ Robot.prototype.acelerar = function()
 
 Robot.prototype.parar = function()
 {
-    if(this.estado.avanzar == 1)
+    if(this.estado.avanzar == 1 || this.estado.girarDe == 1 || this.estado.girarIz == 1)
     {
         this.estado.avanzar = 0;
+        this.estado.girarDe = 0;
+        this.estado.girarIz = 0;
 
         $.ajax({
             type: "POST",
@@ -39,6 +41,63 @@ Robot.prototype.parar = function()
             success: function (response)
             {
                 //console.log("parando");
+            }
+        });
+    }
+};
+
+/*
+Robot.prototype.retroceder = function()
+{
+    if(this.estado.avanzar == 1)
+    {
+        this.estado.avanzar = 0;
+
+        $.ajax({
+            type: "POST",
+            url: this.urlControl,
+            data: {orden: "retroceder"},
+            success: function (response)
+            {
+                //console.log("retroceder");
+            }
+        });
+    }
+};
+*/
+
+Robot.prototype.girarDe = function()
+{
+    if(this.estado.girarDe != 1)
+    {
+        this.estado.girarDe = 1;
+
+        $.ajax({
+            type: "POST",
+            url: this.urlControl,
+            data: {orden: "girarDe"},
+            success: function (response)
+            {
+                //console.log("girar Derecha");
+            }
+        });
+    }
+};
+
+Robot.prototype.girarIz = function()
+{
+
+    if(this.estado.girarIz != 1)
+    {
+        this.estado.girarIz = 1;
+
+        $.ajax({
+            type: "POST",
+            url: this.urlControl,
+            data: {orden: "girarIz"},
+            success: function (response)
+            {
+                //console.log("girar Izquierda");
             }
         });
     }

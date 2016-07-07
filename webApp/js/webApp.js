@@ -98,8 +98,10 @@ function start()
     camara.position.set( 0.0, radius, radius * 3.5 );
     escena.add(camara);
 
-    personaje.moverEstado = { delante: 0, atras: 0, izquierda: 0, derecha: 0,
-                              girarIz: 0, girarDe: 0, saltando: 0,velocidad: 0 };
+    personaje.moverEstado = { delante: 0, atras: 0,
+                            izquierda: 0, derecha: 0,
+                            saltando: 0,velocidad: 0,
+                            girarIz: 0, girarDe: 0};
     personaje.pesoAnimacion = {esperar:1, correr: 0, salto: 0};
     personaje.mixer.clipAction("saltoBueno").timeScale = 2;
     personaje.mixer.clipAction("correrBueno").timeScale = 2;
@@ -174,8 +176,11 @@ function onKeydown(event)
         case 87: /*W*/ personaje.moverEstado.delante = 1; break;
         case 83: /*S*/ console.log("S pressed"); break;
 
-        case 65: /*A*/ personaje.moverEstado.girarIz = 1; break;
-        case 68: /*D*/ personaje.moverEstado.girarDe = 1; break;
+        case 65: /*A*/ personaje.moverEstado.izquierda = 1; break;
+        case 68: /*D*/ personaje.moverEstado.derecha = 1; break;
+
+        case 81: /*Q*/ personaje.moverEstado.girarIz = 1; break;
+        case 69: /*E*/ personaje.moverEstado.girarDe = 1; break;
 
         case 32: /*SPACE*/
             if(personaje.moverEstado.saltando == 0)
@@ -199,8 +204,11 @@ function onKeyup(event)
         case 87: /*W*/ personaje.moverEstado.delante = 0; break;
         case 83: /*S*/ console.log("S released"); break;
 
-        case 65: /*A*/ personaje.moverEstado.girarIz = 0; break;
-        case 68: /*D*/ personaje.moverEstado.girarDe = 0; break;
+        case 65: /*A*/ personaje.moverEstado.izquierda = 0; break;
+        case 68: /*D*/ personaje.moverEstado.derecha = 0; break;
+
+        case 81: /*Q*/ personaje.moverEstado.girarIz = 0; break;
+        case 69: /*E*/ personaje.moverEstado.girarDe = 0; break;
 
     }
 
@@ -221,6 +229,7 @@ function actualizarMov()
     //Cuando se complete la animación de salto cambiamos el estado
     if(personaje.mixer.clipAction("saltoBueno").time >= personaje.mixer.clipAction("saltoBueno")._clip.duration-1)
     {
+        robot.parar();
         personaje.moverEstado.saltando = 0.5;
     }
 
@@ -228,7 +237,7 @@ function actualizarMov()
     //Si estamos dentro del angulo de giro se gira hacia un lado u otro y se mueve en X si se da el caso
     if(personaje.rotation.y >= -maxGiro && personaje.rotation.y <= maxGiro)
     {
-        personaje.rotation.y += velocidadGiro * (-personaje.moverEstado.girarDe + personaje.moverEstado.girarIz);
+        personaje.rotation.y += velocidadGiro * (-personaje.moverEstado.derecha + personaje.moverEstado.izquierda);
 
         if(personaje.pesoAnimacion.correr > 0) //Si no está parado se mueve en el eje X
         {
@@ -241,12 +250,12 @@ function actualizarMov()
     }
 
 
-    //Cuando gire demasiado que no siga girando
-    if(personaje.rotation.y < -maxGiro)
+    //Cuando gire demasiado que no siga girando a no ser que este girando el robot
+    if(personaje.rotation.y < -maxGiro && personaje.moverEstado.girarIz == 0)
     {
         personaje.rotation.y = -maxGiro;
     }
-    else if(personaje.rotation.y > maxGiro)
+    else if(personaje.rotation.y > maxGiro && personaje.moverEstado.girarDe == 0)
     {
         personaje.rotation.y = maxGiro;
     }
@@ -264,7 +273,7 @@ function actualizarMov()
     }
 
     //ayuda para volver a mirar al frente
-    if(personaje.rotation.y > -0.15 && personaje.rotation.y < 0.15 && personaje.moverEstado.girarDe == 0 && personaje.moverEstado.girarIz == 0)
+    if(personaje.rotation.y > -0.15 && personaje.rotation.y < 0.15 && personaje.moverEstado.derecha == 0 && personaje.moverEstado.izquierda == 0)
     {
         personaje.rotation.y = 0;
     }
@@ -309,6 +318,7 @@ function actualizarMov()
     }//Saltamos y empezamos su animacion bloqueando lo demas
     else if(personaje.moverEstado.saltando == 1)
     {
+        robot.acelerar();
         //Si acaba de empezar se hace el cambio de animación.
         if(personaje.pesoAnimacion.salto <= 1)
         {
@@ -335,7 +345,7 @@ function actualizarMov()
 
 
     }
-    //Si no esta saltando se anima correr o esperar,
+    //Si no esta saltando se anima correr, esperar, girarIz o girarDer,
     //Si se está pulsando hacia adelante empieza a ganar peso la animación de correr hasta el tope
     else if(personaje.moverEstado.saltando == 0 && personaje.moverEstado.delante == 1 && personaje.pesoAnimacion.correr <= 1)
     {
@@ -348,7 +358,38 @@ function actualizarMov()
         personaje.play("correrBueno", personaje.pesoAnimacion.correr);
         personaje.play("esperarBueno", personaje.pesoAnimacion.esperar);
     }
-    //Si está corriendo y se libera el botón de hacia alante empieza a ganar peso la animación de esperar
+    //Si pulsamos girarIz gira a la izquierda siempre y cuando no esté corriendo
+    else if(personaje.moverEstado.girarIz == 1 && personaje.moverEstado.saltando == 0 && personaje.moverEstado.delante == 0)
+    {
+        robot.girarIz();
+        personaje.pesoAnimacion.correr += velocidadCambioAnimación;
+        //Si vuelve de saltar, esperar ya estará a 0 y no hace falta cambiarla. En caso contrario esperar disminuye conforme correr avanza
+        if(personaje.pesoAnimacion.esperar >= 0)
+            personaje.pesoAnimacion.esperar = 1.0 - personaje.pesoAnimacion.correr;
+
+        personaje.play("correrBueno", personaje.pesoAnimacion.correr);
+        personaje.play("esperarBueno", personaje.pesoAnimacion.esperar);
+
+        //ponemos mirando al personaje hacia la izquierda
+        personaje.rotation.y = 1.5;
+    }
+    //Si pulsamos girarDe gira a la derecha siempre y cuando no esté corriendo
+    else if(personaje.moverEstado.girarDe == 1 && personaje.moverEstado.saltando == 0 && personaje.moverEstado.delante == 0)
+    {
+        robot.girarDe();
+        personaje.pesoAnimacion.correr += velocidadCambioAnimación;
+        //Si vuelve de saltar, esperar ya estará a 0 y no hace falta cambiarla. En caso contrario esperar disminuye conforme correr avanza
+        if(personaje.pesoAnimacion.esperar >= 0)
+            personaje.pesoAnimacion.esperar = 1.0 - personaje.pesoAnimacion.correr;
+
+        personaje.play("correrBueno", personaje.pesoAnimacion.correr);
+        personaje.play("esperarBueno", personaje.pesoAnimacion.esperar);
+
+        //ponemos mirando al personaje hacia la izquierda
+        personaje.rotation.y = -1.4;
+    }
+
+    //Si está corriendo y se libera el botón de hacia alante o girar empieza a ganar peso la animación de esperar
     else if(personaje.moverEstado.saltando == 0 && personaje.moverEstado.delante == 0 && personaje.pesoAnimacion.esperar < 1)
     {
         robot.parar();
@@ -360,6 +401,8 @@ function actualizarMov()
         personaje.play("correrBueno", personaje.pesoAnimacion.correr);
         personaje.play("esperarBueno", personaje.pesoAnimacion.esperar);
     }
+
+
     restaurarPesos();
     //console.log(personaje.mixer.clipAction("saltoBueno").time);
 
@@ -397,6 +440,7 @@ function manejadorTouch(cod)
             aux = {keyCode: 87};
             onKeyup(aux);
             break;
+
         case "sA":
             aux = {keyCode: 65};
             onKeydown(aux);
@@ -405,6 +449,7 @@ function manejadorTouch(cod)
             aux = {keyCode: 65};
             onKeyup(aux);
             break;
+
         case "sD":
             aux = {keyCode: 68};
             onKeydown(aux);
@@ -413,6 +458,25 @@ function manejadorTouch(cod)
             aux = {keyCode: 68};
             onKeyup(aux);
             break;
+
+        case "sQ":
+            aux = {keyCode: 81};
+            onKeydown(aux);
+            break;
+        case "eQ":
+            aux = {keyCode: 81};
+            onKeyup(aux);
+            break;
+
+        case "sE":
+            aux = {keyCode: 69};
+            onKeydown(aux);
+            break;
+        case "eE":
+            aux = {keyCode: 69};
+            onKeyup(aux);
+            break;
+
         case "sBarra":
             aux = {keyCode: 32};
             onKeydown(aux);
