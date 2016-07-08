@@ -27,6 +27,7 @@ function init()
     render.setPixelRatio( window.devicePixelRatio );
     render.setSize( window.innerWidth, window.innerHeight );
     render.autoClear = true;
+    render.shadowMap.enabled = true;
 
     contenedor = document.getElementById("divCanvas");
     contenedor.appendChild(render.domElement);
@@ -40,10 +41,8 @@ function init()
     contenedor.appendChild(stats.dom);
 
 
-    // background color if no video present
-    //canvasImageContext.fillStyle = '#550000';
-    //canvasImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
 
+    //Plano y textura para el video
     videoTexture = new THREE.TextureLoader().load(imgSrc);
     videoTexture.minFilter = THREE.LinearFilter;
     videoTexture.wrapS = THREE.RepeatWrapping;
@@ -60,12 +59,29 @@ function init()
 
     escena.add(plane);
 
+    //Suelo
+    var geometriaSuelo = new THREE.PlaneGeometry(1000, 1000, 0);
+    var materialSuelo = new THREE.ShadowMaterial();
+    materialSuelo.opacity = 0.3
+    //Creamos un plano en el canvas que tendrá como textura
+    suelo = new THREE.Mesh(geometriaSuelo, materialSuelo);
+    suelo.position.y = -23;
+    suelo.rotation.x = 29.8; //[29.6, 30]
+    suelo.receiveShadow = true;
+    escena.add(suelo);
 
-    //Camara
-    /*camara = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 1000);
-    camara.position.set(0, 0, 0);
-    camara.lookAt(escena.position);
-    escena.add(camara);*/
+    //Luz
+    sunlight = new THREE.DirectionalLight();
+    sunlight.position.set(0, 200, 0);
+    sunlight.intensity = 0.2;
+    sunlight.castShadow = true;
+    var intensidad = 300;
+    sunlight.shadow.camera.bottom = -intensidad;
+    sunlight.shadow.camera.left = -intensidad;
+    sunlight.shadow.camera.top = intensidad;
+    sunlight.shadow.camera.right = intensidad;
+    escena.add(sunlight);
+
 
     //Listener
     window.addEventListener('resize',  onWindowResize, false);
@@ -89,6 +105,7 @@ function start()
 
     //personaje.rotation.y = Math.PI * -135 / 180;
     personaje.position.y = -30;
+    personaje.castShadow = true;
     escena.add(personaje);
 
     var aspect = contenedor.canvasWidth / contenedor.canvasHeight;
