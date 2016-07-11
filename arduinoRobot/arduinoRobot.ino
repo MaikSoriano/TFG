@@ -11,7 +11,13 @@
 #define MOTOR2_IN2 5  //I4 Left Avanza
 #define MOTOR2_PWM 10 //ENB
 
+#define ULTRASONIC_TRIG 8 //Trig to HC-SR04 
+#define ULTRASONIC_ECHO 7 //Echo from HC-SR04 
+
 #define LED 13
+
+long distancia;
+long tiempo;
 
 void setup()
 {
@@ -25,19 +31,23 @@ void setup()
   pinMode(MOTOR2_IN2, OUTPUT);
   pinMode(MOTOR2_PWM, OUTPUT);
   
+  // Setup ultrasonic sensor
+  pinMode(ULTRASONIC_TRIG, OUTPUT);
+  pinMode(ULTRASONIC_ECHO, INPUT);
+  
   pinMode(LED, OUTPUT);
   
   // Start motors
   digitalWrite(MOTOR1_PWM, HIGH);
   digitalWrite(MOTOR2_PWM, HIGH);
   
-  
-  
+    
   Serial.begin(9600);
 }
 
 void loop()
 {
+   //Check messages to control the robot
   if(Serial.available())
   {
     char c = Serial.read();
@@ -60,6 +70,10 @@ void loop()
     else if(c == 'Q')
     {
       girarIzq();
+    }
+    else if(c == 'M')
+    {
+      leerDistancia();
     }
   }
 }
@@ -106,5 +120,20 @@ void retroceder()
   
   digitalWrite(MOTOR1_IN1, HIGH);
   digitalWrite(MOTOR2_IN1, HIGH);
+}
+
+void leerDistancia()
+{
+  //Check front distance
+  distancia = 0;
+  digitalWrite(ULTRASONIC_TRIG, LOW);
+  delayMicroseconds(5);
+  digitalWrite(ULTRASONIC_TRIG, HIGH);
+  delayMicroseconds(10);
+  tiempo = pulseIn(ULTRASONIC_ECHO, HIGH);
+  distancia = int(tiempo/58.2);
+  delayMicroseconds(10);
+  Serial.println(distancia);
+  //delay(1000);
 }
 

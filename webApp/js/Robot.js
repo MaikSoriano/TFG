@@ -6,6 +6,9 @@ function Robot()
 {
     this.estado = {avanzar:0, girarIz: 0, girarDe: 0};
     this.urlControl = "php/controlRobot.php";
+    this.distancia = {front: 0, left: 0, right: 0};
+    this.poderAndar = {front: true, left: true, right: true};
+    this.lastCallDistancia = 0;
 }
 
 Robot.prototype.acelerar = function()
@@ -101,4 +104,44 @@ Robot.prototype.girarIz = function()
             }
         });
     }
+};
+
+Robot.prototype.comprobarDistancia = function(forzar)
+{
+    if(this.lastCallDistancia == 120 || forzar == true)
+    {
+        this.lastCallDistancia = 0;
+
+        var robot = this;
+        var distanciaMin = 5;
+
+        $.ajax({
+            type: "POST",
+            url: this.urlControl,
+            dataType: "text",
+            data: {orden: "distancia"},
+            success: function (response)
+            {
+                var respuesta = response.split("\n");
+                console.log("1:" + respuesta[0] + " 2:" + respuesta[1]);
+
+                respuesta = respuesta[1].split("c");
+
+                if(respuesta[0] == "" || respuesta[0] == "m")
+                {
+                    robot.comprobarDistancia(true);
+                }
+                else
+                {
+                    robot.distancia.front = respuesta[0];
+                    if (robot.distancia.front <= distanciaMin)
+                        robot.poderAndar.front = false;
+                    else if (robot.distancia.front > distanciaMin)
+                        robot.poderAndar.front = true;
+                }
+            }
+        });
+    }
+
+    this.lastCallDistancia++;
 };

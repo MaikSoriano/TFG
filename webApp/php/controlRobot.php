@@ -25,6 +25,10 @@
                 $argumentos = "S";
                 break;
 
+            case "distancia":
+                $argumentos = "M";
+                break;
+
     		default:
     			$argumentos = null;
     			break;
@@ -32,7 +36,9 @@
 
     	if($argumentos != null)
     	{
-    		$comando = exec('python ../py/controlRobot.py '.$argumentos);
+    		$comando = "vacio";
+    		$comando = shell_exec('python ../py/controlRobot.py '.$argumentos);
+    		echo $comando;
     	}
     }
 ?>

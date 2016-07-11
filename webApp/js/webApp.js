@@ -59,10 +59,10 @@ function init()
 
     escena.add(plane);
 
-    //Suelo
+    //Suelo para sombra
     var geometriaSuelo = new THREE.PlaneGeometry(1000, 1000, 0);
-    var materialSuelo = new THREE.ShadowMaterial();
-    materialSuelo.opacity = 0.3
+    var materialSuelo = new THREE.ShadowMaterial(); //Cambiar el tipo de material si se quiere añadir suelo en RA
+    materialSuelo.opacity = 0.2;
     //Creamos un plano en el canvas que tendrá como textura
     suelo = new THREE.Mesh(geometriaSuelo, materialSuelo);
     suelo.position.y = -23;
@@ -141,6 +141,7 @@ function animar()
     actualizarMov();
     var delta = clock.getDelta();
     personaje.update(delta);
+    robot.comprobarDistancia();
 
     stats.end();
 }
@@ -188,10 +189,8 @@ function onKeydown(event)
     switch ( event.keyCode )
     {
 
-        case 16: /* shift */ this.movementSpeedMultiplier = .1; break;
-
         case 87: /*W*/ personaje.moverEstado.delante = 1; break;
-        case 83: /*S*/ console.log("S pressed"); break;
+        case 83: /*S*/ console.log("S pressed");  break;
 
         case 65: /*A*/ personaje.moverEstado.izquierda = 1; break;
         case 68: /*D*/ personaje.moverEstado.derecha = 1; break;
@@ -215,8 +214,6 @@ function onKeyup(event)
 {
     switch ( event.keyCode )
     {
-
-        case 16: /* shift */ this.movementSpeedMultiplier = .1; break;
 
         case 87: /*W*/ personaje.moverEstado.delante = 0; break;
         case 83: /*S*/ console.log("S released"); break;
@@ -242,6 +239,22 @@ function actualizarMov()
     var maxGiro = 0.55;
     var maxPos  = 250;
 
+    //COMPROBACIONES ROBOT
+    //Si no puede ir hacia alante
+    if(robot.poderAndar.front == false)
+    {
+        personaje.moverEstado.delante = 0;
+    }
+    //Si no puede girar hacia la derecha
+    if(robot.poderAndar.right == false)
+    {
+        personaje.moverEstado.right = 0;
+    }
+    //Si no puede girar hacia la izquierda
+    if(robot.poderAndar.left == false)
+    {
+        personaje.moverEstado.left = 0;
+    }
 
     //Cuando se complete la animación de salto cambiamos el estado
     if(personaje.mixer.clipAction("saltoBueno").time >= personaje.mixer.clipAction("saltoBueno")._clip.duration-1)
@@ -251,7 +264,7 @@ function actualizarMov()
     }
 
 
-    //Si estamos dentro del angulo de giro se gira hacia un lado u otro y se mueve en X si se da el caso
+    //Si estamos dentro del angulo de giro se rota hacia un lado u otro y se mueve en X si se da el caso
     if(personaje.rotation.y >= -maxGiro && personaje.rotation.y <= maxGiro)
     {
         personaje.rotation.y += velocidadGiro * (-personaje.moverEstado.derecha + personaje.moverEstado.izquierda);
@@ -267,7 +280,7 @@ function actualizarMov()
     }
 
 
-    //Cuando gire demasiado que no siga girando a no ser que este girando el robot
+    //Cuando rote demasiado que no siga rotando a no ser que este girando el robot
     if(personaje.rotation.y < -maxGiro && personaje.moverEstado.girarIz == 0)
     {
         personaje.rotation.y = -maxGiro;
@@ -301,8 +314,8 @@ function actualizarMov()
     //  si está a 0.5 es que ha terminado el salto y hay que volver a correr o esperar.
     if(personaje.moverEstado.saltando == 0.5)
     {
-        //Vamos a esperar
-        if(personaje.moverEstado.delante == 1)
+        //Vamos a correr
+        if(personaje.moverEstado.delante == 1 && robot.poderAndar.front == true)
         {
             personaje.pesoAnimacion.correr += velocidadCambioAnimación;
             personaje.pesoAnimacion.salto  -= velocidadCambioAnimación;
@@ -317,7 +330,7 @@ function actualizarMov()
             }
 
         }
-        else //Vamos a correr
+        else //Vamos a esperar
         {
             personaje.pesoAnimacion.esperar += velocidadCambioAnimación;
             personaje.pesoAnimacion.salto  -= velocidadCambioAnimación;
@@ -333,7 +346,7 @@ function actualizarMov()
 
         }
     }//Saltamos y empezamos su animacion bloqueando lo demas
-    else if(personaje.moverEstado.saltando == 1)
+    else if(personaje.moverEstado.saltando == 1 && robot.poderAndar.front == true)
     {
         robot.acelerar();
         //Si acaba de empezar se hace el cambio de animación.
@@ -364,7 +377,7 @@ function actualizarMov()
     }
     //Si no esta saltando se anima correr, esperar, girarIz o girarDer,
     //Si se está pulsando hacia adelante empieza a ganar peso la animación de correr hasta el tope
-    else if(personaje.moverEstado.saltando == 0 && personaje.moverEstado.delante == 1 && personaje.pesoAnimacion.correr <= 1)
+    else if(personaje.moverEstado.saltando == 0 && personaje.moverEstado.delante == 1 && personaje.pesoAnimacion.correr <= 1 && robot.poderAndar.front == true)
     {
         robot.acelerar();
         personaje.pesoAnimacion.correr += velocidadCambioAnimación;
@@ -376,7 +389,7 @@ function actualizarMov()
         personaje.play("esperarBueno", personaje.pesoAnimacion.esperar);
     }
     //Si pulsamos girarIz gira a la izquierda siempre y cuando no esté corriendo
-    else if(personaje.moverEstado.girarIz == 1 && personaje.moverEstado.saltando == 0 && personaje.moverEstado.delante == 0)
+    else if(personaje.moverEstado.girarIz == 1 && personaje.moverEstado.saltando == 0 && personaje.moverEstado.delante == 0 && robot.poderAndar.left == true)
     {
         robot.girarIz();
         personaje.pesoAnimacion.correr += velocidadCambioAnimación;
@@ -391,7 +404,7 @@ function actualizarMov()
         personaje.rotation.y = 1.5;
     }
     //Si pulsamos girarDe gira a la derecha siempre y cuando no esté corriendo
-    else if(personaje.moverEstado.girarDe == 1 && personaje.moverEstado.saltando == 0 && personaje.moverEstado.delante == 0)
+    else if(personaje.moverEstado.girarDe == 1 && personaje.moverEstado.saltando == 0 && personaje.moverEstado.delante == 0 && robot.poderAndar.right == true)
     {
         robot.girarDe();
         personaje.pesoAnimacion.correr += velocidadCambioAnimación;
