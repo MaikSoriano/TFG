@@ -113,7 +113,7 @@ Robot.prototype.comprobarDistancia = function(forzar)
         this.lastCallDistancia = 0;
 
         var robot = this;
-        var distanciaMin = 5;
+        var distanciaMin = 27;
 
         $.ajax({
             type: "POST",
@@ -127,7 +127,7 @@ Robot.prototype.comprobarDistancia = function(forzar)
 
                 respuesta = respuesta[1].split("c");
 
-                if(respuesta[0] == "" || respuesta[0] == "m")
+                if(respuesta[0] == "" || respuesta[0] == "m" || respuesta[0]<=2)
                 {
                     robot.comprobarDistancia(true);
                 }

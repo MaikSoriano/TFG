@@ -3,12 +3,12 @@
  * Proyecto: TFG - https://github.com/MaikSoriano/TFG
  * Fecha: Julio 2016
  *****************************************************************/
-#define MOTOR1_IN1 2  //I1 Right
-#define MOTOR1_IN2 3  //I2 Right
+#define MOTOR1_IN1 2  //I1 Left
+#define MOTOR1_IN2 3  //I2 Left
 #define MOTOR1_PWM 9  //ENA
 
-#define MOTOR2_IN1 4  //I3 Left Retrocede
-#define MOTOR2_IN2 5  //I4 Left Avanza
+#define MOTOR2_IN1 4  //I3 Right Retrocede
+#define MOTOR2_IN2 5  //I4 Right Avanza
 #define MOTOR2_PWM 10 //ENB
 
 #define ULTRASONIC_TRIG 8 //Trig to HC-SR04 
@@ -98,20 +98,20 @@ void parar()
   digitalWrite(MOTOR2_IN2, LOW);
 }
 
-void girarDer() //Probar girando las 2 ruedas en sentido contrario
+void girarIzq() //Probar girando las 2 ruedas en sentido contrario
 {
   digitalWrite(LED, HIGH);
   
-  digitalWrite(MOTOR1_IN2, LOW);
+  digitalWrite(MOTOR1_IN1, HIGH);
   digitalWrite(MOTOR2_IN2, HIGH);
 }
 
-void girarIzq()
+void girarDer()
 {
   digitalWrite(LED, HIGH);
   
   digitalWrite(MOTOR1_IN2, HIGH);
-  digitalWrite(MOTOR2_IN2, LOW);
+  digitalWrite(MOTOR2_IN1, HIGH);
 }
 
 void retroceder()

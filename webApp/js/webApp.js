@@ -11,6 +11,7 @@ var contenedor;
 var stats;
 var clock = new THREE.Clock();
 var imgSrc = "php/get_pic.php?time=" + new Date().getTime();
+var lastCallVideo = 0;
 
 
 
@@ -149,17 +150,8 @@ function animar()
 function renderEscena()
 {
 
-    // Actualizamos la textura.
-    imgSrc = "php/get_pic.php?time=" + new Date().getTime();
-    videoTexture = new THREE.TextureLoader().load(
-        //Resource to be loaded
-        imgSrc,
-        //Function onLoad
-        function(nuevaTextura){
-            nuevaTextura.minFilter = THREE.LinearFilter;
-            plane.material.map=nuevaTextura
-        }
-    );
+    actualizarVideo();
+
     render.autoClear = false;
     render.clear();
 
@@ -516,5 +508,26 @@ function manejadorTouch(cod)
             onKeyup(aux);
             break;
     }
+}
 
+function actualizarVideo()
+{
+    if(lastCallVideo == 4)
+    {
+        lastCallVideo = 0;
+        // Actualizamos la textura.
+        imgSrc = "php/get_pic.php?time=" + new Date().getTime();
+
+        videoTexture = new THREE.TextureLoader().load(
+            //Resource to be loaded
+            imgSrc,
+            //Function onLoad
+            function (nuevaTextura)
+            {
+                nuevaTextura.minFilter = THREE.LinearFilter;
+                plane.material.map = nuevaTextura
+            }
+        );
+    }
+    lastCallVideo++;
 }
