@@ -5,6 +5,8 @@
 var render;
 var escena;
 var camara;
+var arEscena;
+var arCamara;
 var personaje = null;
 var robot = null;
 var contenedor;
@@ -12,6 +14,7 @@ var stats;
 var clock = new THREE.Clock();
 var imgSrc = "php/get_pic.php?time=" + new Date().getTime();
 var lastCallVideo = 0;
+var canvas2d;
 
 
 
@@ -20,6 +23,7 @@ function init()
 
     //Escena
     escena = new THREE.Scene();
+    arEscena = new THREE.Scene();
     escena.add(new THREE.AmbientLight(0xffffff));
 
     //Render
@@ -36,6 +40,12 @@ function init()
     contenedor.canvasWidth = window.innerWidth;
     contenedor.canvasHeight = window.innerHeight;
     render.setSize(contenedor.canvasWidth, contenedor.canvasHeight);
+
+    //Canvas 2D para AR
+    canvas2d = document.createElement('canvas'); // canvas to draw our video on
+    canvas2d.width = contenedor.canvasWidth;
+    canvas2d.height = contenedor.canvasHeight;
+    contenedor.appendChild(canvas2d);
 
 
     stats = new Stats();
@@ -112,9 +122,13 @@ function start()
     var aspect = contenedor.canvasWidth / contenedor.canvasHeight;
     var radius = personaje.geometry.boundingSphere.radius;
 
+    arCamara = new THREE.Camera();
     camara = new THREE.PerspectiveCamera( 45, aspect, 1, 10000 );
     camara.position.set( 0.0, radius, radius * 3.5 );
     escena.add(camara);
+    arEscena.add(arCamara);
+
+
 
     personaje.moverEstado = { delante: 0, atras: 0,
                             izquierda: 0, derecha: 0,
@@ -124,6 +138,7 @@ function start()
     personaje.mixer.clipAction("saltoBueno").timeScale = 2;
     personaje.mixer.clipAction("correrBueno").timeScale = 2;
     personaje.play("esperarBueno", 1);
+
 
     manejadorTouch();
     animar();
@@ -139,6 +154,7 @@ function animar()
 
 
     renderEscena();
+
     actualizarMov();
     var delta = clock.getDelta();
     personaje.update(delta);
@@ -149,13 +165,16 @@ function animar()
 
 function renderEscena()
 {
-
     actualizarVideo();
+
+    if(canvas2d.changed)
+        detectarMarcadores();
 
     render.autoClear = false;
     render.clear();
 
     render.render(escena, camara);
+    render.render(arEscena, arCamara);
 
 }
 
@@ -165,11 +184,18 @@ function onWindowResize()
     contenedor.canvasHeight = window.innerHeight-5;
 
     camara.aspect = contenedor.canvasWidth / contenedor.canvasHeight;
+
     camara.updateProjectionMatrix();
+
 
     render.setSize( contenedor.canvasWidth, contenedor.canvasHeight );
     //plane.scale.x = contenedor.canvasWidth;
     //plane.scale.y = contenedor.canvasHeight;
+
+    canvas2d.width = contenedor.canvasWidth;
+    canvas2d.height = contenedor.canvasHeight;
+    inicializarDetectorMarcadores(canvas2d, contenedor.canvasWidth, contenedor.canvasHeight, true);
+
 }
 
 function onKeydown(event)
@@ -518,6 +544,10 @@ function actualizarVideo()
         // Actualizamos la textura.
         imgSrc = "php/get_pic.php?time=" + new Date().getTime();
 
+        //creamos la imagen que le vamos a pasar al canvas 2D para la RA
+        var img1 = new Image(); // HTML5 Constructor
+        img1.src = imgSrc;
+
         videoTexture = new THREE.TextureLoader().load(
             //Resource to be loaded
             imgSrc,
@@ -526,8 +556,14 @@ function actualizarVideo()
             {
                 nuevaTextura.minFilter = THREE.LinearFilter;
                 plane.material.map = nuevaTextura
+
+                //Pintamos el canvas 2D con la imagen para la RA
+                canvas2d.getContext('2d').drawImage(img1, 0, 0, contenedor.canvasWidth, contenedor.canvasHeight);
+                canvas2d.changed = true;
             }
         );
+
+
     }
     lastCallVideo++;
 }

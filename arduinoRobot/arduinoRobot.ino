@@ -16,8 +16,14 @@
 
 #define LED 13
 
+#define AVANZAR 1
+#define DERECHA 2
+#define IZQUIERDA 3
+
+
 long distancia;
 long tiempo;
+int ultimoMov;
 
 void setup()
 {
@@ -38,8 +44,10 @@ void setup()
   pinMode(LED, OUTPUT);
   
   // Start motors
-  digitalWrite(MOTOR1_PWM, HIGH);
-  digitalWrite(MOTOR2_PWM, HIGH);
+  analogWrite(MOTOR1_PWM, 200);
+  analogWrite(MOTOR2_PWM, 200);
+  
+  ultimoMov = AVANZAR;
   
     
   Serial.begin(9600);
@@ -84,6 +92,13 @@ void avanzar()
   
   digitalWrite(MOTOR1_IN2, HIGH);
   digitalWrite(MOTOR2_IN2, HIGH);
+  
+  delay(125);
+  
+  analogWrite(MOTOR1_PWM, 200);
+  analogWrite(MOTOR2_PWM, 235);
+  
+  ultimoMov = AVANZAR;
 }
 
 void parar()
@@ -96,6 +111,22 @@ void parar()
   //motor2
   digitalWrite(MOTOR2_IN1, LOW);
   digitalWrite(MOTOR2_IN2, LOW);
+  
+   switch(ultimoMov)
+   {
+     case AVANZAR:
+       analogWrite(MOTOR1_PWM, 240);
+       analogWrite(MOTOR2_PWM, 250);
+       break;
+     case DERECHA:
+       analogWrite(MOTOR1_PWM, 240);
+       analogWrite(MOTOR2_PWM, 250);
+       break;
+     case IZQUIERDA:
+       analogWrite(MOTOR1_PWM, 250);
+       analogWrite(MOTOR2_PWM, 50);
+       break; 
+   }
 }
 
 void girarIzq() //Probar girando las 2 ruedas en sentido contrario
@@ -104,6 +135,15 @@ void girarIzq() //Probar girando las 2 ruedas en sentido contrario
   
   digitalWrite(MOTOR1_IN1, HIGH);
   digitalWrite(MOTOR2_IN2, HIGH);
+  
+  delay(125);
+  
+  analogWrite(MOTOR1_PWM, 100);
+  analogWrite(MOTOR2_PWM, 100);
+  
+  ultimoMov = IZQUIERDA;
+  
+  
 }
 
 void girarDer()
@@ -112,6 +152,13 @@ void girarDer()
   
   digitalWrite(MOTOR1_IN2, HIGH);
   digitalWrite(MOTOR2_IN1, HIGH);
+  
+  delay(125);
+  
+  analogWrite(MOTOR1_PWM, 100);
+  analogWrite(MOTOR2_PWM, 100);
+  
+  ultimoMov = DERECHA;
 }
 
 void retroceder()

@@ -127,7 +127,7 @@ Robot.prototype.comprobarDistancia = function(forzar)
 
                 respuesta = respuesta[1].split("c");
 
-                if(respuesta[0] == "" || respuesta[0] == "m" || respuesta[0]<=2)
+                if(respuesta[0] == "" || respuesta[0] == "m" || respuesta[0]<=10)
                 {
                     robot.comprobarDistancia(true);
                 }
