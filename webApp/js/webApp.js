@@ -15,6 +15,7 @@ var clock = new THREE.Clock();
 var imgSrc = "php/get_pic.php?time=" + new Date().getTime();
 var lastCallVideo = 0;
 var canvas2d;
+var juegoBarriles = null;
 
 
 
@@ -25,6 +26,7 @@ function init()
     escena = new THREE.Scene();
     arEscena = new THREE.Scene();
     escena.add(new THREE.AmbientLight(0xffffff));
+    arEscena.add(new THREE.AmbientLight(0xff0000));
 
     //Render
     render = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -71,14 +73,15 @@ function init()
     escena.add(plane);
 
     //Suelo para sombra
-    var geometriaSuelo = new THREE.PlaneGeometry(1000, 1000, 0);
+    var geometriaSuelo = new THREE.PlaneGeometry(1500, 10000, 0);
     var materialSuelo = new THREE.ShadowMaterial(); //Cambiar el tipo de material si se quiere añadir suelo en RA
     materialSuelo.opacity = 0.2;
     //Creamos un plano en el canvas que tendrá como textura
     suelo = new THREE.Mesh(geometriaSuelo, materialSuelo);
     suelo.position.y = -23;
-    suelo.rotation.x = 29.8; //[29.6, 30]
+    suelo.rotation.x = 29.685; //[29.6, 30]
     suelo.receiveShadow = true;
+    suelo.material.depthWrite = false;
     escena.add(suelo);
 
     //Luz
@@ -101,6 +104,9 @@ function init()
 
     //Robot
     robot = new Robot();
+
+    //Juegos
+    juegoBarriles = new JuegoBarriles();
 
 
     //Personaje
@@ -156,6 +162,7 @@ function animar()
     renderEscena();
 
     actualizarMov();
+    ejecutarMarcador();
     var delta = clock.getDelta();
     personaje.update(delta);
     robot.comprobarDistancia();
@@ -187,14 +194,13 @@ function onWindowResize()
 
     camara.updateProjectionMatrix();
 
-
     render.setSize( contenedor.canvasWidth, contenedor.canvasHeight );
     //plane.scale.x = contenedor.canvasWidth;
     //plane.scale.y = contenedor.canvasHeight;
 
     canvas2d.width = contenedor.canvasWidth;
     canvas2d.height = contenedor.canvasHeight;
-    inicializarDetectorMarcadores(canvas2d, contenedor.canvasWidth, contenedor.canvasHeight, true);
+    inicializarDetectorMarcadores(canvas2d, true);
 
 }
 

@@ -123,7 +123,7 @@ Robot.prototype.comprobarDistancia = function(forzar)
             success: function (response)
             {
                 var respuesta = response.split("\n");
-                console.log("1:" + respuesta[0] + " 2:" + respuesta[1]);
+                //console.log("1:" + respuesta[0] + " 2:" + respuesta[1]);
 
                 respuesta = respuesta[1].split("c");
 

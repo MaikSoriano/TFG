@@ -6,9 +6,10 @@ var arParam;
 var arRaster;
 var arDetector;
 var markers = {};
-var markerRoot = new THREE.Object3D();
+var markerRoot = null;
+const  JUEGOBARRILES = 8;
 
-function inicializarDetectorMarcadores(canvas, width, height, video)
+function inicializarDetectorMarcadores(canvas, video)
 {
     //inicializar raster RGB para el canvas 2D. JSARToolKit usa el raster para leer los datos de la imagen
     arRaster = new NyARRgbRaster_Canvas2D(canvas);
@@ -25,28 +26,10 @@ function inicializarDetectorMarcadores(canvas, width, height, video)
     arDetector.setContinueMode(video);
 
 
-    // Next we need to make the Three.js camera use the FLARParam matrix. BORRAR
+    // Hacemos que la cámara de Three.js use los parámetros de FLARParam
     var tmp = new Float32Array(16);
     arParam.copyCameraMatrix(tmp, 1, 10000);
     arCamara.projectionMatrix.setFromArray(tmp);
-    //escena.matrix.setFromArray(tmp);
-
-
-
-    markerRoot.matrixAutoUpdate = false;
-
-
-// Add the marker models and suchlike into your marker root object.
-    var cube = new THREE.Mesh(
-        new THREE.CubeGeometry(100,100,100),
-        new THREE.MeshBasicMaterial({color: 0xff00ff})
-    );
-    cube.position.z = 0;
-    markerRoot.add(cube);
-
-// Add the marker root to your scene.
-    arEscena.add(markerRoot);
-
 
 }
 
@@ -92,21 +75,29 @@ function detectarMarcadores()
         var tmp = new Float32Array(16);
         copyMarkerMatrix(resultMat, tmp);
 
+        //Renovamos el contador del marcador a 0
+        markers[currId].contador = 0;
+
         //Asigarle a nuestro objeto markerRoot la matriz del marcador
-
-        markerRoot.matrix.setFromArray(tmp);
-
-        //markerRoot.matrixWorldNeedsUpdate = true;
-        //var x = {};
-        //markers[8].transform.getZXYAngle(x);
-        //markerRoot.children[0].rotation["x"] =  x["x"];
-        //markerRoot.children[0].rotation["y"] =  x["y"];
-        //markerRoot.children[0].rotation["z"] =  x["z"];
-        //Fin marcadores
+        //markerRoot.matrix.setFromArray(tmp);
     }
 }
 
-function pintarEnMarcador(marcador)
+function ejecutarMarcador()
+{
+    for (var id in markers)
+    {
+        markers[id].contador++;
+        if(id == JUEGOBARRILES)
+        {
+            var tmp = new Float32Array(16);
+            copyMarkerMatrix(markers[id].transform, tmp);
+            juegoBarriles.play(tmp, markers[id].contador);
+        }
+    }
+}
+
+function renovarContadorMarcador(id)
 {
 
 }
