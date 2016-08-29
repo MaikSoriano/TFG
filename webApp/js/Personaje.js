@@ -134,7 +134,7 @@ THREE.BlendCharacter = function () {
 
 		return this.mixer.clipAction( animName ).getEffectiveWeight();
 
-	}
+	};
 
 
 
@@ -161,7 +161,7 @@ THREE.BlendCharacter = function () {
 
 		this.visible = boolean;
 
-	}
+	};
 
 	/**
 	 * @author Miguel Soriano
@@ -171,17 +171,17 @@ THREE.BlendCharacter = function () {
 	this.stopOne = function(animName)
 	{
 		this.mixer.clipAction( animName ).stop();
-	}
+	};
 
 	this.playAt = function(animName)
 	{
 		this.mixer.clipAction( animName ).startAt(0);
-	}
+	};
 
 	this.reset = function(animName)
 	{
 		this.mixer.clipAction( animName ).reset();
-	}
+	};
 
 };
 

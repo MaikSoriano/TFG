@@ -26,7 +26,7 @@ function init()
     escena = new THREE.Scene();
     arEscena = new THREE.Scene();
     escena.add(new THREE.AmbientLight(0xffffff));
-    arEscena.add(new THREE.AmbientLight(0xff0000));
+    arEscena.add(new THREE.AmbientLight(0xffffff));
 
     //Render
     render = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -47,7 +47,7 @@ function init()
     canvas2d = document.createElement('canvas'); // canvas to draw our video on
     canvas2d.width = contenedor.canvasWidth;
     canvas2d.height = contenedor.canvasHeight;
-    contenedor.appendChild(canvas2d);
+    //contenedor.appendChild(canvas2d);
 
 
     stats = new Stats();
@@ -83,6 +83,17 @@ function init()
     suelo.receiveShadow = true;
     suelo.material.depthWrite = false;
     escena.add(suelo);
+
+    var arGeometriaSuelo =  new THREE.CubeGeometry(500, 1500, 1);
+    var arMaterialSuelo = new THREE.ShadowMaterial(); //Cambiar el tipo de material si se quiere añadir suelo en RA
+    arMaterialSuelo.opacity = 0.2;
+    arSuelo = new THREE.Mesh(arGeometriaSuelo, arMaterialSuelo);
+    arSuelo.position.y = -200;
+    arSuelo.position.z = 900;
+    arSuelo.rotation.x = 29.985; //[29.6, 30]
+    arSuelo.receiveShadow = true;
+    arSuelo.material.depthWrite = false;
+    arEscena.add(arSuelo);
 
     //Luz
     sunlight = new THREE.DirectionalLight();
@@ -128,7 +139,7 @@ function start()
     var aspect = contenedor.canvasWidth / contenedor.canvasHeight;
     var radius = personaje.geometry.boundingSphere.radius;
 
-    arCamara = new THREE.Camera();
+    arCamara = new THREE.PerspectiveCamera( 45, aspect, 1, 10000 );
     camara = new THREE.PerspectiveCamera( 45, aspect, 1, 10000 );
     camara.position.set( 0.0, radius, radius * 3.5 );
     escena.add(camara);
@@ -561,7 +572,7 @@ function actualizarVideo()
             function (nuevaTextura)
             {
                 nuevaTextura.minFilter = THREE.LinearFilter;
-                plane.material.map = nuevaTextura
+                plane.material.map = nuevaTextura;
 
                 //Pintamos el canvas 2D con la imagen para la RA
                 canvas2d.getContext('2d').drawImage(img1, 0, 0, contenedor.canvasWidth, contenedor.canvasHeight);

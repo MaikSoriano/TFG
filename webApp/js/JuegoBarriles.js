@@ -14,6 +14,7 @@ function JuegoBarriles()
 
     this.iniciar = function()
     {
+        var juegoBarriles = this;
         //markerRoot contendrá los modelos 3D y será el que seguirá a marcador detectado
         this.markerRootBarriles = new THREE.Object3D();
         this.markerRootBarriles.matrixAutoUpdate = false;
@@ -21,24 +22,45 @@ function JuegoBarriles()
         arEscena.add(this.markerRootBarriles);
 
         // añadimos los objetos que queramos al markerRoot
-        this.puerta = new THREE.Mesh(
-            new THREE.CubeGeometry(100, 100, 100),
-            new THREE.MeshBasicMaterial({color: 0xaa7888, vertexColors: THREE.FaceColors })
-        );
-        this.puerta.position.z = 0;
-        this.markerRootBarriles.add(this.puerta);
+        //this.puerta = new THREE.Mesh(
+        //    new THREE.CubeGeometry(100, 100, 100),
+        //    new THREE.MeshBasicMaterial({color: 0xaa7888, vertexColors: THREE.FaceColors })
+        //);
+        //this.markerRootBarriles.add(this.puerta);
 
-        var barril1 = new Barril("1", this.markerRootBarriles);
-        var barril2 = new Barril("2", this.markerRootBarriles);
-        var barril3 = new Barril("3", this.markerRootBarriles);
-        var barril4 = new Barril("4", this.markerRootBarriles);
+        var loader = new THREE.ColladaLoader();
+        loader.options.convertUpAxis = true;
+        loader.load( 'models/trampilla.dae', function ( collada ) {
 
-        this.barriles.push(barril1);
-        this.barriles.push(barril2);
-        this.barriles.push(barril3);
-        this.barriles.push(barril4);
+            juegoBarriles.puerta = collada.scene;
 
-        this.mostrar(false);
+            juegoBarriles.puerta.traverse( function ( child ) {
+
+                if ( child instanceof THREE.SkinnedMesh ) {
+
+                    var animation = new THREE.Animation( child, child.geometry.animation );
+                    animation.play();
+                }
+
+            } );
+
+            //dae.scale.x = dae.scale.y = dae.scale.z = 0.002;
+            juegoBarriles.puerta.updateMatrix();
+
+            juegoBarriles.markerRootBarriles.add( juegoBarriles.puerta );
+            juegoBarriles.markerRootBarriles.visible = false;
+        });
+
+
+
+
+        for(var i = 0; i < 10; i++)
+        {
+            var barril = new Barril(i, this.markerRootBarriles);
+            this.barriles.push(barril);
+        }
+
+        //this.mostrar(false);
     };
 
     this.mostrar = function(visible)
@@ -62,7 +84,7 @@ function JuegoBarriles()
         this.tiempoJugado++;
         //Si hace X segundos que no ve el marcador y estaba jugando se para el juego
         if(contador >= this.tiempoAntesDeStop && this.jugando)
-            this.stop()
+            this.stop();
         else if(contador < this.tiempoAntesDeStop)
         {
             //Si aun no esta jugando se inicia el juego
@@ -95,13 +117,16 @@ function JuegoBarriles()
 
         for(var i = 0; i < this.barriles.length; i++)
         {
+            var aux = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
 
-
-            var aux = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-
-            this.barriles[i].padreAuxiliar.remove(this.barriles[i].barrilMalla)
-            this.markerRootBarriles.add(this.barriles[i].barrilMalla)
+            this.barriles[i].padreAuxiliar.remove(this.barriles[i].barrilMalla);
+            this.markerRootBarriles.add(this.barriles[i].barrilMalla);
             this.barriles[i].soltado = false;
+            this.barriles[i].zInicial = -1;
+            this.barriles[i].xInicial = -1;
+            this.barriles[i].xIncremento = -1;
+            this.barriles[i].xFinal = personaje.position.x / 1.5;
+            this.barriles[i].xVelocidad = -1;
 
 
             this.barriles[i].padreAuxiliar.matrix.setFromArray(aux);
@@ -109,6 +134,9 @@ function JuegoBarriles()
             this.barriles[i].barrilMalla.position.x = 0;
             this.barriles[i].barrilMalla.position.y = 0;
             this.barriles[i].barrilMalla.position.z = 0;
+
+            this.barriles[i].barrilMalla.rotation.x = 0;
+            this.barriles[i].barrilMalla.rotation.y = 0;
         }
     };
 
@@ -119,9 +147,14 @@ function JuegoBarriles()
 
         var aux = barril.barrilMalla.matrixWorld.elements;
 
-        juegoBarriles.markerRootBarriles.remove(barril.barrilMalla)
-        barril.padreAuxiliar.add(barril.barrilMalla)
+        juegoBarriles.markerRootBarriles.remove(barril.barrilMalla);
+        barril.padreAuxiliar.add(barril.barrilMalla);
         barril.padreAuxiliar.matrix.setFromArray(aux);
+        barril.padreAuxiliar.matrix.elements[4] = 0;
+        barril.padreAuxiliar.matrix.elements[5] = 0;
+        barril.padreAuxiliar.matrix.elements[6] = 0;
+
+
     };
 
     this.soltarBarril = function()
@@ -143,18 +176,35 @@ function JuegoBarriles()
         {
             if(this.barriles[id].soltado == true)
             {
+                if(this.barriles[id].zInicial == -1)
+                {
+                    this.barriles[id].zInicial = this.barriles[id].padreAuxiliar.matrix.elements[14];
+                    this.barriles[id].xInicial = this.barriles[id].padreAuxiliar.matrix.elements[12];
+                }
+
+                //Mover este bloque arriba si queremos que los barriles no nos sigan.
+                this.barriles[id].xIncremento = ((personaje.position.x + 40) / 1.5) - this.barriles[id].xInicial;
+                var saltosEnZ = (this.barriles[id].zInicial-300)/this.barriles[id].zVelocidad;
+                this.barriles[id].xVelocidad = this.barriles[id].xIncremento / saltosEnZ;
+                this.barriles[id].xFinal = personaje.position.x / 1.5;
+
+
                 //Llevar barril hasta el personaje
-                if(this.barriles[id].padreAuxiliar.matrix.elements[12] > 0)
-                    this.barriles[id].padreAuxiliar.matrix.elements[12] -= 3 ;
-                if(this.barriles[id].padreAuxiliar.matrix.elements[12] < 0)
-                    this.barriles[id].padreAuxiliar.matrix.elements[12] += 3 ;
+                if(this.barriles[id].padreAuxiliar.matrix.elements[12] != this.barriles[id].xFinal )
+                    this.barriles[id].padreAuxiliar.matrix.elements[12] += this.barriles[id].xVelocidad;
 
-                if(this.barriles[id].padreAuxiliar.matrix.elements[14] > 150)
-                    this.barriles[id].padreAuxiliar.matrix.elements[14] -= 4;
+                if(this.barriles[id].padreAuxiliar.matrix.elements[14] > 0)
+                {
+                    this.barriles[id].padreAuxiliar.matrix.elements[14] -= this.barriles[id].zVelocidad;
 
-                this.barriles[id].padreAuxiliar.matrix.elements[13] = -(this.barriles[id].padreAuxiliar.matrix.elements[14]/4);
+                    if (this.barriles[id].padreAuxiliar.matrix.elements[13] < -(this.barriles[id].padreAuxiliar.matrix.elements[14] / 5.45))
+                        this.barriles[id].padreAuxiliar.matrix.elements[13] += 0.55;
+                }
 
                 //Girar y botar barril
+                this.barriles[id].barrilMalla.rotation.x += 0.08;
+                this.barriles[id].barrilMalla.rotation.y = 0.2;
+
             }
         }
     };
@@ -168,18 +218,52 @@ function Barril(id, markerRoot)
     var barril = this;
     this.id = id;
     this.soltado = false;
+    this.zInicial = -1;
+    this.xInicial = -1;
+    this.xIncremento = -1;
+    this.xFinal = 0;
+    this.xVelocidad = -1;
+    this.zVelocidad = 4;
+
     //El padre auxiliar se usa al sacar el barril del markerRoot cuando es "lanzado" en el juego.
     this.padreAuxiliar = new THREE.Object3D();
     this.padreAuxiliar.matrixAutoUpdate = false;
     // Añadimos el markerRoot  la escena
     arEscena.add(this.padreAuxiliar);
 
-    this.barrilMalla = null;
+    //this.barrilMalla = null;
     //// Creamos el barril y lo añadimos al markerRoot
-    this.barrilMalla = new THREE.Mesh(
-        new THREE.CubeGeometry(50, 25, 25),
-        new THREE.MeshStandardMaterial( { color: 0xa03c12, vertexColors: THREE.FaceColors } )
-    );
-    this.barrilMalla.position.z = 0;
-    markerRoot.add(this.barrilMalla);
+    //this.barrilMalla = new THREE.Mesh(
+    //    new THREE.CubeGeometry(50, 25, 25),
+    //    new THREE.MeshStandardMaterial( { color: 0xa03c12, vertexColors: THREE.FaceColors } )
+    //);
+    //this.barrilMalla.position.z = 0;
+    //this.barrilMalla.castShadow = true;
+    //markerRoot.add(this.barrilMalla);
+
+
+    var loader = new THREE.ColladaLoader();
+    loader.options.convertUpAxis = true;
+    loader.load( 'models/barril.dae', function ( collada ) {
+
+        barril.barrilMalla = collada.scene;
+
+        barril.barrilMalla.traverse( function ( child ) {
+
+            if ( child instanceof THREE.SkinnedMesh ) {
+
+                var animation = new THREE.Animation( child, child.geometry.animation );
+                animation.play();
+            }
+
+        } );
+
+        //dae.scale.x = dae.scale.y = dae.scale.z = 0.002;
+        barril.barrilMalla.updateMatrix();
+        barril.barrilMalla.castShadow = true;
+        barril.barrilMalla.visible = false;
+
+        markerRoot.add(barril.barrilMalla );
+    });
+
 }
