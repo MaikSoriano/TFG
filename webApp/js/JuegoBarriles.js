@@ -7,7 +7,7 @@ function JuegoBarriles()
     this.puerta = null;
     this.barriles = [];
     this.jugando = false;
-    this.tiempoAntesDeStop = 240;
+    this.tiempoAntesDeStop = 60;
     this.tiempoEntreBarriles = 120;
     this.tiempoJugado = 0;
     this.ultimoLanzamiento = 0;
@@ -30,7 +30,7 @@ function JuegoBarriles()
 
         var loader = new THREE.ColladaLoader();
         loader.options.convertUpAxis = true;
-        loader.load( 'models/trampilla.dae', function ( collada ) {
+        loader.load( 'models/puerta.dae', function ( collada ) {
 
             juegoBarriles.puerta = collada.scene;
 
@@ -46,8 +46,29 @@ function JuegoBarriles()
 
             //dae.scale.x = dae.scale.y = dae.scale.z = 0.002;
             juegoBarriles.puerta.updateMatrix();
-
+            juegoBarriles.puerta.abrir = false;
             juegoBarriles.markerRootBarriles.add( juegoBarriles.puerta );
+            juegoBarriles.markerRootBarriles.visible = false;
+        });
+
+        loader.load( 'models/trampilla.dae', function ( collada ) {
+
+            juegoBarriles.marco = collada.scene;
+
+            juegoBarriles.marco.traverse( function ( child ) {
+
+                if ( child instanceof THREE.SkinnedMesh ) {
+
+                    var animation = new THREE.Animation( child, child.geometry.animation );
+                    animation.play();
+                }
+
+            } );
+
+            //dae.scale.x = dae.scale.y = dae.scale.z = 0.002;
+            juegoBarriles.marco.updateMatrix();
+
+            juegoBarriles.markerRootBarriles.add( juegoBarriles.marco );
             juegoBarriles.markerRootBarriles.visible = false;
         });
 
@@ -97,6 +118,7 @@ function JuegoBarriles()
             //Se asigna al markerRoot la posición del marcador
             this.markerRootBarriles.matrix.setFromArray(matriz);
 
+            this.abrirPuerta();
             this.soltarBarril();
             this.moverBarriles();
         }
@@ -125,8 +147,10 @@ function JuegoBarriles()
             this.barriles[i].zInicial = -1;
             this.barriles[i].xInicial = -1;
             this.barriles[i].xIncremento = -1;
+            this.barriles[i].yIncremento = -1;
             this.barriles[i].xFinal = personaje.position.x / 1.5;
             this.barriles[i].xVelocidad = -1;
+            this.barriles[i].yVelocidad = -1;
 
 
             this.barriles[i].padreAuxiliar.matrix.setFromArray(aux);
@@ -150,17 +174,40 @@ function JuegoBarriles()
         juegoBarriles.markerRootBarriles.remove(barril.barrilMalla);
         barril.padreAuxiliar.add(barril.barrilMalla);
         barril.padreAuxiliar.matrix.setFromArray(aux);
-        barril.padreAuxiliar.matrix.elements[4] = 0;
-        barril.padreAuxiliar.matrix.elements[5] = 0;
-        barril.padreAuxiliar.matrix.elements[6] = 0;
+        //barril.padreAuxiliar.matrix.elements[4] = 0;
+        //barril.padreAuxiliar.matrix.elements[5] = 0;
+        //barril.padreAuxiliar.matrix.elements[6] = 0;
+    };
 
-
+    this.abrirPuerta = function()
+    {
+        if(this.puerta.abrir)
+        {
+            this.puerta.rotateX(0.05);
+            if(this.puerta.position.y < 40)
+                this.puerta.position.y += 2;
+            if(this.puerta.rotation.x > -0.57)
+                this.puerta.abrir = false;
+        }
+        else if(!this.puerta.abrir)
+        {
+            if(this.puerta.position.y > 0)
+                this.puerta.position.y -= 2;
+            if(this.puerta.rotation.x > -1.57)
+                this.puerta.rotateX(-0.05);
+        }
     };
 
     this.soltarBarril = function()
     {
         for(var id = 0; id <this.barriles.length; id++)
         {
+            //Abrimos la puerta un poquito antes de soltar el barril
+            if(this.tiempoJugado - (this.ultimoLanzamiento-20) >= this.tiempoEntreBarriles && this.barriles[id].soltado == false && !this.puerta.abrir)
+            {
+                this.puerta.abrir = true;
+            }
+            //Soltamos el barril
             if(this.tiempoJugado - this.ultimoLanzamiento >= this.tiempoEntreBarriles && this.barriles[id].soltado == false)
             {
                 this.ultimoLanzamiento = this.tiempoJugado;
@@ -181,12 +228,21 @@ function JuegoBarriles()
                     this.barriles[id].zInicial = this.barriles[id].padreAuxiliar.matrix.elements[14];
                     this.barriles[id].xInicial = this.barriles[id].padreAuxiliar.matrix.elements[12];
                 }
+                if(personaje.moverEstado.delante == 1 || personaje.moverEstado.saltando == 1)
+                {
+                    this.barriles[id].zVelocidad = 8;
+                }
+                else
+                    this.barriles[id].zVelocidad = 4;
 
                 //Mover este bloque arriba si queremos que los barriles no nos sigan.
                 this.barriles[id].xIncremento = ((personaje.position.x + 40) / 1.5) - this.barriles[id].xInicial;
                 var saltosEnZ = (this.barriles[id].zInicial-300)/this.barriles[id].zVelocidad;
                 this.barriles[id].xVelocidad = this.barriles[id].xIncremento / saltosEnZ;
                 this.barriles[id].xFinal = personaje.position.x / 1.5;
+
+                this.barriles[id].yIncremento = (-60) - this.barriles[id].padreAuxiliar.matrix.elements[13];
+                this.barriles[id].yVelocidad = this.barriles[id].yIncremento / saltosEnZ;
 
 
                 //Llevar barril hasta el personaje
@@ -197,8 +253,8 @@ function JuegoBarriles()
                 {
                     this.barriles[id].padreAuxiliar.matrix.elements[14] -= this.barriles[id].zVelocidad;
 
-                    if (this.barriles[id].padreAuxiliar.matrix.elements[13] < -(this.barriles[id].padreAuxiliar.matrix.elements[14] / 5.45))
-                        this.barriles[id].padreAuxiliar.matrix.elements[13] += 0.55;
+                    //if (this.barriles[id].padreAuxiliar.matrix.elements[13] < -(this.barriles[id].padreAuxiliar.matrix.elements[14] / 5.45))
+                    this.barriles[id].padreAuxiliar.matrix.elements[13] += this.barriles[id].yVelocidad;
                 }
 
                 //Girar y botar barril
@@ -223,6 +279,8 @@ function Barril(id, markerRoot)
     this.xIncremento = -1;
     this.xFinal = 0;
     this.xVelocidad = -1;
+    this.yVelocidad = -1;
+    this.yIncremento = -1;
     this.zVelocidad = 4;
 
     //El padre auxiliar se usa al sacar el barril del markerRoot cuando es "lanzado" en el juego.

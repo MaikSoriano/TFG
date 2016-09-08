@@ -96,7 +96,7 @@ void avanzar()
   delay(125);
   
   analogWrite(MOTOR1_PWM, 200);
-  analogWrite(MOTOR2_PWM, 235);
+  analogWrite(MOTOR2_PWM, 200);
   
   ultimoMov = AVANZAR;
 }
@@ -115,7 +115,7 @@ void parar()
    switch(ultimoMov)
    {
      case AVANZAR:
-       analogWrite(MOTOR1_PWM, 240);
+       analogWrite(MOTOR1_PWM, 250);
        analogWrite(MOTOR2_PWM, 250);
        break;
      case DERECHA:
@@ -124,7 +124,7 @@ void parar()
        break;
      case IZQUIERDA:
        analogWrite(MOTOR1_PWM, 250);
-       analogWrite(MOTOR2_PWM, 50);
+       analogWrite(MOTOR2_PWM, 250);
        break; 
    }
 }
@@ -138,8 +138,8 @@ void girarIzq() //Probar girando las 2 ruedas en sentido contrario
   
   delay(125);
   
-  analogWrite(MOTOR1_PWM, 100);
-  analogWrite(MOTOR2_PWM, 100);
+  analogWrite(MOTOR1_PWM, 125);
+  analogWrite(MOTOR2_PWM, 125);
   
   ultimoMov = IZQUIERDA;
   
@@ -155,8 +155,8 @@ void girarDer()
   
   delay(125);
   
-  analogWrite(MOTOR1_PWM, 100);
-  analogWrite(MOTOR2_PWM, 100);
+  analogWrite(MOTOR1_PWM, 125);
+  analogWrite(MOTOR2_PWM, 125);
   
   ultimoMov = DERECHA;
 }
